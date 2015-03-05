@@ -1,4 +1,5 @@
 from Controller import Controller
+from model import ModelManager
 
 
 class MainInterfaceController(Controller):
@@ -8,9 +9,12 @@ class MainInterfaceController(Controller):
 	def __init__(self, melted_telnet_controller):
 		self.melted_telnet_controller = melted_telnet_controller
 
-	def change_file_handler(self, paths):
-		path = paths[0]
-		self.melted_telnet_controller.load_clip(0, path)
+	def add_file_handler(self, paths):
+		if len(paths) > 0:
+			path = paths[0]
+			self.melted_telnet_controller.load_clip(0, path)
+		else:
+			print("No file selected")
 
 	def play_handler(self):
 		self.melted_telnet_controller.play_clip(0)
@@ -37,4 +41,7 @@ class MainInterfaceController(Controller):
 		self.melted_telnet_controller.goto_position_clip(0, percent)
 
 	def populate_info(self):
-		self.view.builder.get_object("main_interface_window")
+		clips = ModelManager.get_models(ModelManager.MODEL_CLIP)
+		for clip in clips:
+			clip = clip['model']
+			self.view.builder.get_object("playlist_list_store").append([clip.path])

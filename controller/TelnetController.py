@@ -17,8 +17,11 @@ class TelnetController(object):
 	def __init__(self, host=HOST, port=PORT):
 		self.telnet_callbacks = []
 
-		print "connecting to " + host + ": " + str(port)
-		self.tn = telnetlib.Telnet(host, port)
+		print "attempting connection to " + host + ": " + str(port)
+		try:
+			self.tn = telnetlib.Telnet(host, port)
+		except:
+			raise Exception("Could not connect, are the details correct?")
 		message = self.tn.read_until("100 VTR Ready", 3000)
 		if re.match(message, "100 VTR Ready"):
 			print message,
@@ -123,7 +126,11 @@ class MeltedTelnetController(TelnetController):
 		self.push_command("USET U" + str(unit) + " eof=loop")
 
 	def stop_looping_clip(self, unit):
+		# TODO stop looping, currently not working
 		self.push_command("USET U" + str(unit))
+
+	def append_clip_to_queue(self, unit, clip):
+		self.push_command("APND U" + str(unit) + " " + clip)
 
 	def goto_position_clip(self, unit, percent):
 		self.push_command("GOTO U" + str(unit) + " 0")
@@ -152,7 +159,7 @@ class MeltedTelnetController(TelnetController):
 			else:
 				raise Exception("No Callback")
 		else:
-			raise Exception("No Match Found, check telnet log")
+			print("No units found")
 
 	def process_clips(self, result, callback):
 		if result:
@@ -173,4 +180,4 @@ class MeltedTelnetController(TelnetController):
 			else:
 				raise Exception("No Callback")
 		else:
-			raise Exception("No Match Found, check telnet log")
+			print("No clips found on unit")

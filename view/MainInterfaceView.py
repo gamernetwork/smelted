@@ -14,7 +14,7 @@ class MainInterfaceView(GtkView):
 		self.builder.connect_signals(self)
 		self.window = self.builder.get_object("main_interface_window")
 		self.slider = self.builder.get_object("seek_bar")
-		self.playlist_list_view = self.builder.get_object("playlist_list_view")
+		self.file_chooser_button = self.builder.get_object("file_chooser_button")
 		self.slider.set_range(0, 100)
 		self.window.show()
 
@@ -23,9 +23,6 @@ class MainInterfaceView(GtkView):
 
 	def on_gtk_quit_activate(self, menuitem, data=None):
 		Gtk.main_quit()
-
-	def on_filechooserbutton_file_set(self, file_chooser_button, data=None):
-		self.controller.change_file_handler(file_chooser_button.get_filenames())
 
 	def on_play_button_clicked(self, button, data=None):
 		self.controller.play_handler()
@@ -47,3 +44,6 @@ class MainInterfaceView(GtkView):
 
 	def on_seek_bar_button_release_event(self, seek_bar, data=None):
 		self.controller.seek_bar_button_release_handler(seek_bar.get_value())
+
+	def on_add_to_playlist_button_clicked(self, button, data=None):
+		self.controller.add_file_handler(self.file_chooser_button.get_filenames())

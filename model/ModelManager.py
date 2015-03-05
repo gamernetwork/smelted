@@ -9,12 +9,12 @@ def get_models(model):
 	model_size = len(model_list)
 	models_retrieved = []
 	while i < model_size:
-		if models_retrieved[i].type == model:
-			models_retrieved.append(models_retrieved[i])
+		if model_list[i]['model_type'] == model:
+			models_retrieved.append(model_list[i])
 		i += 1
 
 	return models_retrieved
 
 
 def register_model(model, model_type):
-	model_list.append({"model": model, "type": model_type})
+	model_list.append({"model": model, "model_type": model_type})
