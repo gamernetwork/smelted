@@ -8,7 +8,7 @@ class MainInterfaceView(GtkView):
 	def __init__(self, main_interface_controller):
 		super(MainInterfaceView, self).__init__(main_interface_controller)
 
-		self.gladefile = "view/designs/test.glade"
+		self.gladefile = "view/designs/main_interface.glade"
 		self.builder = Gtk.Builder()
 		self.builder.add_from_file(self.gladefile)
 		self.builder.connect_signals(self)

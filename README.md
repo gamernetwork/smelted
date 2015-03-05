@@ -1,3 +1,3 @@
 # smelted
 
-Run from MainController.py
+start from main.py

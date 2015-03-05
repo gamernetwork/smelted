@@ -2,25 +2,25 @@ from Controller import Controller
 from model import ModelManager, Models
 
 
-class UnitController(Controller):
+class InitialiseUnitsController(Controller):
 
 	melted_telnet_controller = None
 
 	pending_unit_processing = []
 
-	def __init__(self, melted_telnet_controller):
+	loaded_callback = None
+
+	def __init__(self, melted_telnet_controller, loaded_callback):
 		self.melted_telnet_controller = melted_telnet_controller
+		self.loaded_callback = loaded_callback
 		self.find_existing_units()
 
 	def find_existing_units(self):
 		self.melted_telnet_controller.get_units(self.add_units)
 
 	def find_all_existing_clips(self, units):
-		if len(self.pending_unit_processing) == 0:
-			self.pending_unit_processing = units
-			self.find_clips_on_unit(units[0])
-		else:
-			raise Exception("Already looking for clips, soz!")
+		self.pending_unit_processing = units
+		self.find_clips_on_unit(units[0])
 
 	def find_clips_on_unit(self, unit):
 		self.melted_telnet_controller.get_unit_clips(unit.unit_name, self.add_clips)
@@ -54,5 +54,4 @@ class UnitController(Controller):
 		if len(self.pending_unit_processing) > 0:
 			self.melted_telnet_controller.get_unit_clips(unit.unit_name, self.add_clips)
 		else:
-			# MainController.on_loaded_from_telnet()
-			pass
+			self.loaded_callback()
