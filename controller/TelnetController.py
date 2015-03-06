@@ -1,6 +1,5 @@
 import telnetlib
 import threading
-import re
 import time
 
 
@@ -11,8 +10,7 @@ class TelnetController(object):
 	PORT = 5250
 	polling = False
 	tn = None
-	input_blocked = True
-	telnet_callbacks = None
+	pending_commands = []
 
 	def __init__(self, host=HOST, port=PORT):
 		self.telnet_callbacks = []
@@ -20,41 +18,38 @@ class TelnetController(object):
 		print "attempting connection to " + host + ": " + str(port)
 		try:
 			self.tn = telnetlib.Telnet(host, port)
+			self.connection_success()
 		except:
 			raise Exception("Could not connect, are the details correct?")
+	
+	def connection_success(self):
 		message = self.tn.read_until("100 VTR Ready", 3000)
-		if re.match(message, "100 VTR Ready"):
+		if message.find("100 VTR Ready") >= 0:
 			print message,
+			self.start_polling()
 		else:
-			# possible error here
-			print message,
-		self.start_polling()
+			raise Exception("Expected '100 VTR Ready', is there something wrong with the server?")
 
-	def write_commands(self):
-		while 1:
-			if not self.input_blocked:
-				command = raw_input("> ")
-				self.input_blocked = True
-				self.tn.write(command + "\r\n")
-				if command == "exit":
-					self.disconnect()
-					break
+	# Adds a command to a queue
+	def push_command(self, command, timeout=100, match=None, callback=None, process_callback=None):
+		self.telnet_commands.append({"command": command, "time_created": int(round(time.time() * 1000)), "timeout": timeout, "match": match, "callback": callback, "process_callback": process_callback})
+		if len(self.telnet_commands) == 1:
+			self.execute_command(command)
 
-	def push_command(self, command, match=None, timeout=1000, process_callback=None, callback=None):
+	# Runs telnet commands
+	def execute_command(self, command):
 		print(command)
 		self.tn.write(command + "\r\n")
 
-		if match:
-			self.telnet_callbacks.append({"match": match, "time_created": int(round(time.time() * 1000)), "timeout": timeout, "process_callback": process_callback, "callback": callback})
-
 	def start_polling(self):
 		self.polling = True
-		threading.Timer(0.5, self.poll_for_output).start()
+		threading.Timer(0.5, self.poll_telnet).start()
 
 	def stop_polling(self):
 		self.polling = False
 
-	def poll_for_output(self):
+	# Runs a timer loop that checks telnet output and runs commands if pending every 100 milliseconds
+	def poll_telnet(self):
 		if self.polling:
 			try:
 				line = self.tn.read_very_eager()
@@ -64,23 +59,39 @@ class TelnetController(object):
 				return
 			if line != '':
 				print line.encode('utf-8'),
-			else:
-				self.input_blocked = False
 
-			# search for matches to callback to, if it hits timeout remove from checks
-			for callback in self.telnet_callbacks:
-				if line != '':
-					if line.find(callback['match']) >= 0:
-						if callback['process_callback']:
-							self.telnet_callbacks.remove(callback)
-							callback['process_callback'](line, callback['callback'])
-							continue
+			if len(self.telnet_commands) > 0:
+				command = self.telnet_commands[0]
+				
+				# search for matches to callback to, if it hits timeout remove from telnet_command list
+				if command['match']:
+					if line != '':
+						if line.find(command['match']) >= 0:
+							if command['process_callback']:
+								self.telnet_commands.remove(command)
+								if command['process_callback']:
+									command['process_callback'](line, command['callback'])
+								elif command['callback']:
+									command['callback']()
+								
+								if len(self.telnet_commands) > 0:
+									self.execute_command(self.telnet_commands[0])
+									command = None
+				if command:
+					if int(round(time.time() * 1000)) - command['time_created'] > command['timeout']:
+						self.telnet_commands.remove(command)
+						if command['match']:
+							raise Exception(command['command'] + ": Timed out, something probably went wrong")
 
-				if int(round(time.time() * 1000)) - callback['time_created'] > callback['timeout']:
-					callback['process_callback'](None, None)
-					self.telnet_callbacks.remove(callback)
+						if command['process_callback']:
+							command['process_callback'](None, None)
+						elif command['callback']:
+								command['callback']()
 
-			threading.Timer(0.1, self.poll_for_output).start()
+						if len(self.telnet_commands) > 0:
+							self.execute_command(self.telnet_commands[0])
+
+			threading.Timer(0.1, self.poll_telnet).start()
 
 	def disconnect(self):
 		self.polling = False
@@ -88,7 +99,7 @@ class TelnetController(object):
 		print("Disconnected from telnet")
 
 
-# For melted specific commands
+# For executing melted specific commands
 class MeltedTelnetController(TelnetController):
 
 	def __init__(self):
@@ -104,42 +115,42 @@ class MeltedTelnetController(TelnetController):
 		self.push_command("REMOVE U" + str(unit))
 
 	def load_clip(self, unit, path):
-		self.push_command("LOAD U" + str(unit) + " " + path)
+		self.push_command("LOAD U" + str(unit) + " " + path, 20000, "201")
 
 	def play_clip(self, unit):
-		self.push_command("PLAY U" + str(unit))
+		self.push_command("PLAY U" + str(unit), 5000, "201")
 
 	def pause_clip(self, unit):
-		self.push_command("PAUSE U" + str(unit))
+		self.push_command("PAUSE U" + str(unit), 5000, "201")
 
 	def stop_clip(self, unit):
 		self.push_command("STOP U" + str(unit))
-		self.push_command("GOTO U" + str(unit) + " 0")
+		self.push_command("GOTO U" + str(unit) + " 0", 5000, "201")
 
 	def forward_clip(self, unit):
-		self.push_command("FF U" + str(unit))
+		self.push_command("FF U" + str(unit), 5000, "201")
 
 	def rewind_clip(self, unit):
-		self.push_command("REW U" + str(unit))
+		self.push_command("REW U" + str(unit), 5000, "201")
 
 	def loop_clip(self, unit):
-		self.push_command("USET U" + str(unit) + " eof=loop")
+		self.push_command("USET U" + str(unit) + " eof=loop", 5000, "201")
 
 	def stop_looping_clip(self, unit):
 		# TODO stop looping, currently not working
-		self.push_command("USET U" + str(unit))
+		self.push_command("USET U" + str(unit), 5000, "201")
 
 	def append_clip_to_queue(self, unit, clip):
-		self.push_command("APND U" + str(unit) + " " + clip)
+		self.push_command("APND U" + str(unit) + " " + clip, 5000, "201")
 
 	def goto_position_clip(self, unit, percent):
-		self.push_command("GOTO U" + str(unit) + " 0")
+		self.push_command("GOTO U" + str(unit) + " 0", 5000, "201")
 
 	def get_units(self, callback):
-		self.push_command("ULS", "U0", 1000, self.process_units, callback)
+		self.push_command("ULS", 10000, "U0", callback, self.process_units)
 
 	def get_unit_clips(self, unit, callback):
-		self.push_command("LIST " + unit, ' "', 1000, self.process_clips, callback)
+		self.push_command("LIST " + unit, 10000, ' "', callback, self.process_clips)
 
 	def process_units(self, result, callback):
 		if result:
