@@ -10,10 +10,11 @@ class TelnetController(object):
 	PORT = 5250
 	polling = False
 	tn = None
-	pending_commands = []
+	telnet_commands = []
+	response_codes = [{"code": 200, "meaning": "OK"}]
 
 	def __init__(self, host=HOST, port=PORT):
-		self.telnet_callbacks = []
+		self.telnet_commands = []
 
 		print "attempting connection to " + host + ": " + str(port)
 		try:
@@ -31,7 +32,7 @@ class TelnetController(object):
 			raise Exception("Expected '100 VTR Ready', is there something wrong with the server?")
 
 	# Adds a command to a queue
-	def push_command(self, command, timeout=100, match=None, callback=None, process_callback=None):
+	def push_command(self, command, timeout=5000, match=None, callback=None, process_callback=None):
 		self.telnet_commands.append({"command": command, "time_created": int(round(time.time() * 1000)), "timeout": timeout, "match": match, "callback": callback, "process_callback": process_callback})
 		if len(self.telnet_commands) == 1:
 			self.execute_command(command)
@@ -59,6 +60,21 @@ class TelnetController(object):
 				return
 			if line != '':
 				print line.encode('utf-8'),
+				i=0
+				while i < len(self.response_codes):
+					if str(self.response_codes[i]['code']).match(line):
+						if self.response_codes[i]['code'] >= 300:
+							print("Error! not processing response any further")
+							if len(self.telnet_commands) > 0:
+								command = self.telnet_commands[0]
+								self.telnet_commands.remove(command)
+								if len(self.telnet_commands) > 0:
+									self.execute_command(self.telnet_commands[0])
+									threading.Timer(0.1, self.poll_telnet).start()
+									return
+						else:
+							break
+					i += 1
 
 			if len(self.telnet_commands) > 0:
 				command = self.telnet_commands[0]
@@ -80,8 +96,6 @@ class TelnetController(object):
 				if command:
 					if int(round(time.time() * 1000)) - command['time_created'] > command['timeout']:
 						self.telnet_commands.remove(command)
-						if command['match']:
-							raise Exception(command['command'] + ": Timed out, something probably went wrong")
 
 						if command['process_callback']:
 							command['process_callback'](None, None)
@@ -91,11 +105,15 @@ class TelnetController(object):
 						if len(self.telnet_commands) > 0:
 							self.execute_command(self.telnet_commands[0])
 
+						self.disconnect()
+						raise Exception(command['command'] + ": Timed out, something probably went wrong. Please reconnect")
+
 			threading.Timer(0.1, self.poll_telnet).start()
 
 	def disconnect(self):
 		self.polling = False
 		self.tn.close()
+		self.telnet_commands = []
 		print("Disconnected from telnet")
 
 
@@ -104,6 +122,16 @@ class MeltedTelnetController(TelnetController):
 
 	def __init__(self):
 		super(MeltedTelnetController, self).__init__()
+		self.response_codes = [{"code": 200, "meaning": "OK"},
+							{"code": 201, "meaning": "OK"},
+							{"code": 202, "meaning": "OK"},
+							{"code": 400, "meaning": "Unknown Command"},
+							{"code": 401, "meaning": "Operation timed out"},
+							{"code": 402, "meaning": "Argument Missing"},
+							{"code": 403, "meaning": "Unit not found"},
+							{"code": 404, "meaning": "Failed to locate or open clip"},
+							{"code": 405, "meaning": "Argument value out of range"},
+							{"code": 500, "meaning": "Server Error"}]
 		# self.load_clip(0, "/home/luke/Videos/trailer.mp4")
 		# self.load_clip(1, "/home/luke/Videos/video.mp4")
 		# self.play_clip(0)
@@ -115,36 +143,36 @@ class MeltedTelnetController(TelnetController):
 		self.push_command("REMOVE U" + str(unit))
 
 	def load_clip(self, unit, path):
-		self.push_command("LOAD U" + str(unit) + " " + path, 20000, "201")
+		self.push_command("LOAD U" + str(unit) + " " + path, 20000)
 
 	def play_clip(self, unit):
-		self.push_command("PLAY U" + str(unit), 5000, "201")
+		self.push_command("PLAY U" + str(unit))
 
 	def pause_clip(self, unit):
-		self.push_command("PAUSE U" + str(unit), 5000, "201")
+		self.push_command("PAUSE U" + str(unit))
 
 	def stop_clip(self, unit):
 		self.push_command("STOP U" + str(unit))
-		self.push_command("GOTO U" + str(unit) + " 0", 5000, "201")
+		self.push_command("GOTO U" + str(unit) + " 0")
 
 	def forward_clip(self, unit):
-		self.push_command("FF U" + str(unit), 5000, "201")
+		self.push_command("FF U" + str(unit))
 
 	def rewind_clip(self, unit):
-		self.push_command("REW U" + str(unit), 5000, "201")
+		self.push_command("REW U" + str(unit))
 
 	def loop_clip(self, unit):
-		self.push_command("USET U" + str(unit) + " eof=loop", 5000, "201")
+		self.push_command("USET U" + str(unit) + " eof=loop")
 
 	def stop_looping_clip(self, unit):
 		# TODO stop looping, currently not working
-		self.push_command("USET U" + str(unit), 5000, "201")
+		self.push_command("USET U" + str(unit))
 
 	def append_clip_to_queue(self, unit, clip):
-		self.push_command("APND U" + str(unit) + " " + clip, 5000, "201")
+		self.push_command("APND U" + str(unit) + " " + clip)
 
 	def goto_position_clip(self, unit, percent):
-		self.push_command("GOTO U" + str(unit) + " 0", 5000, "201")
+		self.push_command("GOTO U" + str(unit) + " 0")
 
 	def get_units(self, callback):
 		self.push_command("ULS", 10000, "U0", callback, self.process_units)
