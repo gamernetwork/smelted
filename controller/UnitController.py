@@ -19,8 +19,11 @@ class InitialiseUnitsController(Controller):
 		self.melted_telnet_controller.get_units(self.add_units)
 
 	def find_all_existing_clips(self, units):
-		self.pending_unit_processing = units
-		self.find_clips_on_unit(units[0])
+		if len(units) > 0:
+			self.pending_unit_processing = units
+			self.find_clips_on_unit(units[0])
+		else:
+			print("No units to find clips on")
 
 	def find_clips_on_unit(self, unit):
 		self.melted_telnet_controller.get_unit_clips(unit.unit_name, self.add_clips)

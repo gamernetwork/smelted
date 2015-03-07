@@ -62,7 +62,7 @@ class TelnetController(object):
 				print line.encode('utf-8'),
 				i=0
 				while i < len(self.response_codes):
-					if str(self.response_codes[i]['code']).match(line):
+					if str(self.response_codes[i]['code']).find(line):
 						if self.response_codes[i]['code'] >= 300:
 							print("Error! not processing response any further")
 							if len(self.telnet_commands) > 0:
@@ -84,26 +84,26 @@ class TelnetController(object):
 					if line != '':
 						if line.find(command['match']) >= 0:
 							if command['process_callback']:
-								self.telnet_commands.remove(command)
 								if command['process_callback']:
 									command['process_callback'](line, command['callback'])
 								elif command['callback']:
 									command['callback']()
-								
+
+								self.telnet_commands.remove(command)
 								if len(self.telnet_commands) > 0:
-									self.execute_command(self.telnet_commands[0])
+									self.execute_command(self.telnet_commands[0]['command'])
 									command = None
 				if command:
 					if int(round(time.time() * 1000)) - command['time_created'] > command['timeout']:
-						self.telnet_commands.remove(command)
 
 						if command['process_callback']:
 							command['process_callback'](None, None)
 						elif command['callback']:
 								command['callback']()
 
+						self.telnet_commands.remove(command)
 						if len(self.telnet_commands) > 0:
-							self.execute_command(self.telnet_commands[0])
+							self.execute_command(self.telnet_commands[0]['command'])
 
 						self.disconnect()
 						raise Exception(command['command'] + ": Timed out, something probably went wrong. Please reconnect")
@@ -178,7 +178,7 @@ class MeltedTelnetController(TelnetController):
 		self.push_command("ULS", 10000, "U0", callback, self.process_units)
 
 	def get_unit_clips(self, unit, callback):
-		self.push_command("LIST " + unit, 10000, ' "', callback, self.process_clips)
+		self.push_command("LIST " + unit, 10000, '\r\n', callback, self.process_clips)
 
 	def process_units(self, result, callback):
 		if result:
