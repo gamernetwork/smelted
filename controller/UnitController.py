@@ -41,7 +41,10 @@ class InitialiseUnitsController(Controller):
 		self.find_all_existing_clips(unit_list)
 
 	def add_clips(self, clips):
-		unit = self.pending_unit_processing.pop()
+		if len(self.pending_unit_processing) > 0:
+			unit = self.pending_unit_processing.pop()
+		else:
+			unit = ModelManager.get_models(ModelManager.MODEL_UNIT)[0]['model']
 
 		for clip_object in clips:
 			clip = Models.Clip()
@@ -50,6 +53,7 @@ class InitialiseUnitsController(Controller):
 			clip.path = clip_object['path']
 			clip.clip_in = clip_object['clip_out']
 			clip.length = clip_object['length']
+			clip.calculated_length = clip_object['calculated_length']
 			clip.fps = clip_object['fps']
 
 			ModelManager.register_model(clip, ModelManager.MODEL_CLIP)

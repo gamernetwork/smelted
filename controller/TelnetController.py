@@ -1,6 +1,7 @@
 import telnetlib
 import threading
 import time
+import os
 
 
 # General Telnet operations in this class
@@ -12,6 +13,8 @@ class TelnetController(object):
 	tn = None
 	telnet_commands = []
 	response_codes = [{"code": 200, "meaning": "OK"}]
+
+	line = ''
 
 	def __init__(self, host=HOST, port=PORT):
 		self.telnet_commands = []
@@ -53,21 +56,20 @@ class TelnetController(object):
 	def poll_telnet(self):
 		if self.polling:
 			try:
-				line = self.tn.read_very_eager()
+				self.line += self.tn.read_very_eager()
 			except EOFError as e:
 				print "EOFError: " + str(e)
 				self.disconnect()
 				return
-			if line != '':
-				print line.encode('utf-8'),
-				i=0
+			if self.line != '':
+				i = 0
 				while i < len(self.response_codes):
-					if line.find(str(self.response_codes[i]['code'])) >= 0:
+					if self.line.find(str(self.response_codes[i]['code'])) >= 0:
 						if self.response_codes[i]['code'] >= 300:
 							print("Error! not processing response any further")
 							if len(self.telnet_commands) > 0:
 								command = self.telnet_commands[0]
-								self.telnet_commands.remove(command)
+								self.remove_command(command)
 								if len(self.telnet_commands) > 0:
 									self.execute_command(self.telnet_commands[0]['command'])
 									threading.Timer(0.1, self.poll_telnet).start()
@@ -76,10 +78,11 @@ class TelnetController(object):
 							if self.telnet_commands[0]['match'] is None:
 								if len(self.telnet_commands) > 0:
 									command = self.telnet_commands[0]
-									self.telnet_commands.remove(command)
+									self.remove_command(command)
 									if len(self.telnet_commands) > 0:
 										self.execute_command(self.telnet_commands[0]['command'])
 										threading.Timer(0.1, self.poll_telnet).start()
+										return
 							break
 					i += 1
 
@@ -88,15 +91,15 @@ class TelnetController(object):
 				
 				# search for matches to callback to, if it hits timeout remove from telnet_command list
 				if command['match']:
-					if line != '':
-						if line.find(command['match']) >= 0:
+					if self.line != '':
+						if self.line.find(command['match']) >= 0:
 							if command['process_callback']:
 								if command['process_callback']:
-									command['process_callback'](line, command['callback'])
+									command['process_callback'](self.line, command['callback'])
 								elif command['callback']:
 									command['callback']()
 
-								self.telnet_commands.remove(command)
+								self.remove_command(command)
 								if len(self.telnet_commands) > 0:
 									self.execute_command(self.telnet_commands[0]['command'])
 									command = None
@@ -108,7 +111,7 @@ class TelnetController(object):
 						elif command['callback']:
 								command['callback']()
 
-						self.telnet_commands.remove(command)
+						self.remove_command(command)
 						if len(self.telnet_commands) > 0:
 							self.execute_command(self.telnet_commands[0]['command'])
 
@@ -116,6 +119,11 @@ class TelnetController(object):
 						raise Exception(command['command'] + ": Timed out, something probably went wrong. Please reconnect")
 
 			threading.Timer(0.1, self.poll_telnet).start()
+
+	def remove_command(self, command):
+		print self.line.encode('utf-8'),
+		self.line = ''
+		self.telnet_commands.remove(command)
 
 	def disconnect(self):
 		self.polling = False
@@ -139,9 +147,10 @@ class MeltedTelnetController(TelnetController):
 							{"code": 404, "meaning": "Failed to locate or open clip"},
 							{"code": 405, "meaning": "Argument value out of range"},
 							{"code": 500, "meaning": "Server Error"}]
-		self.load_clip(0, "/home/luke/Videos/trailer.mp4")
-		self.load_clip(1, "/home/luke/Videos/video.mp4")
-		self.play_clip(0)
+		# self.load_clip(0, "/home/luke/Videos/trailer.mp4")
+		# self.load_clip(1, "/home/luke/Videos/video.mp4")
+		# self.play_clip(0)
+		self.clean_unit(0)
 
 	def create_melted_unit(self, device="sdl"):
 		self.push_command("UADD " + device)
@@ -150,7 +159,7 @@ class MeltedTelnetController(TelnetController):
 		self.push_command("REMOVE U" + str(unit))
 
 	def load_clip(self, unit, path):
-		self.push_command("LOAD U" + str(unit) + " " + path, 20000)
+		self.push_command("APND U" + str(unit) + ' "' + os.path.normpath(path) + '"', 20000)
 
 	def play_clip(self, unit):
 		self.push_command("PLAY U" + str(unit))
@@ -181,11 +190,14 @@ class MeltedTelnetController(TelnetController):
 	def goto_position_clip(self, unit, percent):
 		self.push_command("GOTO U" + str(unit) + " 0")
 
+	def clean_unit(self, unit):
+		self.push_command("CLEAN U" + str(unit))
+
 	def get_units(self, callback):
-		self.push_command("ULS", 10000, "U0", callback, self.process_units)
+		self.push_command("ULS", 10000, "\r\n\r\n", callback, self.process_units)
 
 	def get_unit_clips(self, unit, callback):
-		self.push_command("LIST " + unit, 10000, '\r\n', callback, self.process_clips)
+		self.push_command("LIST " + unit, 10000, '\r\n\r\n', callback, self.process_clips)
 
 	def process_units(self, result, callback):
 		if result:
@@ -217,7 +229,11 @@ class MeltedTelnetController(TelnetController):
 				if len(result[i]) > 2:
 					if result[i][0].isdigit() and result[i][2] == '"':
 						clip = result[i].split(" ")
-						clip = {"index": clip[0], "path": clip[1], "clip_in": clip[2], "clip_out": clip[3], "length": clip[4], "fps": clip[5]}
+						# used if there are spaces in the file path, there is probably a better method of doing this
+						while len(clip) > 7:
+							clip[1] = clip[1] + " " + clip[2]
+							del clip[2]
+						clip = {"index": clip[0], "path": clip[1], "clip_in": clip[2], "clip_out": clip[3], "length": clip[4], "calculated_length": clip[5], "fps": clip[6]}
 						results.append(clip)
 
 				i += 1

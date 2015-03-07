@@ -5,14 +5,17 @@ from model import ModelManager
 class MainInterfaceController(Controller):
 
 	melted_telnet_controller = None
+	main_controller = None
 
-	def __init__(self, melted_telnet_controller):
+	def __init__(self, main_controller, melted_telnet_controller):
+		self.main_controller = main_controller
 		self.melted_telnet_controller = melted_telnet_controller
 
 	def add_file_handler(self, paths):
 		if len(paths) > 0:
 			path = paths[0]
 			self.melted_telnet_controller.load_clip(0, path)
+			self.main_controller.get_unit_controller().find_clips_on_unit(ModelManager.get_models(ModelManager.MODEL_UNIT)[0]['model'])
 		else:
 			print("No file selected")
 

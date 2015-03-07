@@ -16,12 +16,12 @@ class MainController():
 		# sets up telnet interface
 		self.telnet_controller = MeltedTelnetController()
 
+		# Sets up GUI with pygtk and their event listeners
+		self.main_interface_controller = MainInterfaceController(self, self.telnet_controller)
+		main_interface_controller = MainInterfaceView.MainInterfaceView(self.main_interface_controller)
+
 		# manages melted units, existing units and their clips
 		self.unit_controller = InitialiseUnitsController(self.telnet_controller, self.on_loaded_from_telnet)
-
-		# Sets up GUI with pygtk and their event listeners
-		self.main_interface_controller = MainInterfaceController(self.telnet_controller)
-		main_interface_controller = MainInterfaceView.MainInterfaceView(self.main_interface_controller)
 
 		try:
 			Gtk.main()
@@ -32,3 +32,6 @@ class MainController():
 
 	def on_loaded_from_telnet(self):
 		self.main_interface_controller.populate_info()
+
+	def get_unit_controller(self):
+		return self.unit_controller

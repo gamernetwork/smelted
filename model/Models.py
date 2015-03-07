@@ -11,6 +11,7 @@ class Clip():
 	clip_in = None
 	clip_out = None
 	length = 0
+	calculated_length = 0
 	fps = 0
 	progress = 0
 	looping = False
