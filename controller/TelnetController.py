@@ -62,17 +62,24 @@ class TelnetController(object):
 				print line.encode('utf-8'),
 				i=0
 				while i < len(self.response_codes):
-					if str(self.response_codes[i]['code']).find(line):
+					if line.find(str(self.response_codes[i]['code'])) >= 0:
 						if self.response_codes[i]['code'] >= 300:
 							print("Error! not processing response any further")
 							if len(self.telnet_commands) > 0:
 								command = self.telnet_commands[0]
 								self.telnet_commands.remove(command)
 								if len(self.telnet_commands) > 0:
-									self.execute_command(self.telnet_commands[0])
+									self.execute_command(self.telnet_commands[0]['command'])
 									threading.Timer(0.1, self.poll_telnet).start()
 									return
 						else:
+							if self.telnet_commands[0]['match'] is None:
+								if len(self.telnet_commands) > 0:
+									command = self.telnet_commands[0]
+									self.telnet_commands.remove(command)
+									if len(self.telnet_commands) > 0:
+										self.execute_command(self.telnet_commands[0]['command'])
+										threading.Timer(0.1, self.poll_telnet).start()
 							break
 					i += 1
 
@@ -132,9 +139,9 @@ class MeltedTelnetController(TelnetController):
 							{"code": 404, "meaning": "Failed to locate or open clip"},
 							{"code": 405, "meaning": "Argument value out of range"},
 							{"code": 500, "meaning": "Server Error"}]
-		# self.load_clip(0, "/home/luke/Videos/trailer.mp4")
-		# self.load_clip(1, "/home/luke/Videos/video.mp4")
-		# self.play_clip(0)
+		self.load_clip(0, "/home/luke/Videos/trailer.mp4")
+		self.load_clip(1, "/home/luke/Videos/video.mp4")
+		self.play_clip(0)
 
 	def create_melted_unit(self, device="sdl"):
 		self.push_command("UADD " + device)
