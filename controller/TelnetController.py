@@ -42,6 +42,7 @@ class TelnetController(object):
 
 	# Runs telnet commands
 	def execute_command(self, command):
+		self.line = ''
 		print(command)
 		self.tn.write(command + "\r\n")
 
@@ -75,9 +76,9 @@ class TelnetController(object):
 									threading.Timer(0.1, self.poll_telnet).start()
 									return
 						else:
-							if self.telnet_commands[0]['match'] is None:
-								if len(self.telnet_commands) > 0:
-									command = self.telnet_commands[0]
+							if len(self.telnet_commands) > 0:
+								command = self.telnet_commands[0]
+								if command['match'] is None:
 									self.remove_command(command)
 									if len(self.telnet_commands) > 0:
 										self.execute_command(self.telnet_commands[0]['command'])
