@@ -103,7 +103,7 @@ class TelnetController(object):
 								self.remove_command(command)
 								if len(self.telnet_commands) > 0:
 									self.execute_command(self.telnet_commands[0]['command'])
-									command = None
+								command = None
 				if command:
 					if int(round(time.time() * 1000)) - command['time_created'] > command['timeout']:
 
@@ -234,6 +234,7 @@ class MeltedTelnetController(TelnetController):
 						while len(clip) > 7:
 							clip[1] = clip[1] + " " + clip[2]
 							del clip[2]
+						clip[1] = clip[1][1:-1]
 						clip = {"index": clip[0], "path": clip[1], "clip_in": clip[2], "clip_out": clip[3], "length": clip[4], "calculated_length": clip[5], "fps": clip[6]}
 						results.append(clip)
 

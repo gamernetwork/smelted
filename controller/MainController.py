@@ -31,7 +31,7 @@ class MainController():
 				self.telnet_controller.disconnect()
 
 	def on_loaded_from_telnet(self):
-		self.main_interface_controller.populate_info()
+		print("has loaded")
 
 	def get_unit_controller(self):
 		return self.unit_controller

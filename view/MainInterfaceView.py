@@ -6,8 +6,6 @@ from GtkView import GtkView
 class MainInterfaceView(GtkView):
 
 	def __init__(self, main_interface_controller):
-		super(MainInterfaceView, self).__init__(main_interface_controller)
-
 		self.gladefile = "view/designs/main_interface.glade"
 		self.builder = Gtk.Builder()
 		self.builder.add_from_file(self.gladefile)
@@ -16,6 +14,8 @@ class MainInterfaceView(GtkView):
 		self.slider = self.builder.get_object("seek_bar")
 		self.file_chooser_button = self.builder.get_object("file_chooser_button")
 		self.slider.set_range(0, 100)
+		super(MainInterfaceView, self).__init__(main_interface_controller)
+
 		self.window.show()
 
 	def on_window1_destroy(self, object, data=None):

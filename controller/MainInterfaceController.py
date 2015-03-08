@@ -1,5 +1,6 @@
 from Controller import Controller
 from model import ModelManager
+import os
 
 
 class MainInterfaceController(Controller):
@@ -7,9 +8,15 @@ class MainInterfaceController(Controller):
 	melted_telnet_controller = None
 	main_controller = None
 
+	playlist_list_store = None
+
 	def __init__(self, main_controller, melted_telnet_controller):
 		self.main_controller = main_controller
 		self.melted_telnet_controller = melted_telnet_controller
+
+	def on_view_added(self, view):
+		self.playlist_list_store = self.view.builder.get_object("playlist_list_store")
+		ModelManager.register_on_model_added_callback(self.new_clip, ModelManager.MODEL_CLIP)
 
 	def add_file_handler(self, paths):
 		if len(paths) > 0:
@@ -43,8 +50,9 @@ class MainInterfaceController(Controller):
 	def seek_bar_button_release_handler(self, percent):
 		self.melted_telnet_controller.goto_position_clip(0, percent)
 
-	def populate_info(self):
+	def new_clip(self):
+		self.playlist_list_store.clear()
 		clips = ModelManager.get_models(ModelManager.MODEL_CLIP)
 		for clip in clips:
 			clip = clip['model']
-			self.view.builder.get_object("playlist_list_store").append([clip.path])
+			self.playlist_list_store.append([os.path.basename(clip.path)])

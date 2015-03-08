@@ -46,8 +46,14 @@ class InitialiseUnitsController(Controller):
 		else:
 			unit = ModelManager.get_models(ModelManager.MODEL_UNIT)[0]['model']
 
+		clip_models = ModelManager.get_models(ModelManager.MODEL_CLIP)
+		clip_model_index = 0
 		for clip_object in clips:
-			clip = Models.Clip()
+			if clip_model_index < len(clip_models):
+				clip = clip_models[clip_model_index]['model']
+			else:
+				clip = Models.Clip()
+
 			clip.unit = unit.unit_name
 			clip.index = clip_object['index']
 			clip.path = clip_object['path']
@@ -56,7 +62,9 @@ class InitialiseUnitsController(Controller):
 			clip.calculated_length = clip_object['calculated_length']
 			clip.fps = clip_object['fps']
 
-			ModelManager.register_model(clip, ModelManager.MODEL_CLIP)
+			if clip_model_index >= len(clip_models):
+				ModelManager.register_model(clip, ModelManager.MODEL_CLIP)
+			clip_model_index += 1
 
 		if len(self.pending_unit_processing) > 0:
 			self.melted_telnet_controller.get_unit_clips(unit.unit_name, self.add_clips)
