@@ -1,9 +1,9 @@
 from MainInterfaceController import MainInterfaceController
 from TelnetController import MeltedTelnetController
 from UnitController import InitialiseUnitsController
+from PlaylistFileController import PlaylistFileController
 from view import MainInterfaceView
 from gi.repository import Gtk
-from model import ModelManager
 
 
 class MainController():
@@ -11,6 +11,7 @@ class MainController():
 	main_interface_controller = None
 	telnet_controller = None
 	unit_controller = None
+	playlist_controller = None
 
 	def __init__(self):
 		# sets up telnet interface
@@ -22,6 +23,9 @@ class MainController():
 
 		# manages melted units, existing units and their clips
 		self.unit_controller = InitialiseUnitsController(self.telnet_controller, self.on_loaded_from_telnet)
+
+		# manages playlist file manipulation import/export
+		self.playlist_file_controller = PlaylistFileController()
 
 		try:
 			Gtk.main()
@@ -35,3 +39,6 @@ class MainController():
 
 	def get_unit_controller(self):
 		return self.unit_controller
+
+	def get_playlist_file_controller(self):
+		return self.playlist_file_controller

@@ -1,5 +1,7 @@
 from Controller import Controller
 from model import ModelManager
+from FileDialogController import FileDialogController
+from view.FileDialogView import FileDialogView
 import os
 
 
@@ -7,6 +9,7 @@ class MainInterfaceController(Controller):
 
 	melted_telnet_controller = None
 	main_controller = None
+	file_dialog_controller = None
 
 	playlist_list_store = None
 
@@ -49,6 +52,16 @@ class MainInterfaceController(Controller):
 
 	def seek_bar_button_release_handler(self, percent):
 		self.melted_telnet_controller.goto_position_clip(0, percent)
+
+	def import_playlist_button_clicked(self):
+		file_dialog_controller = FileDialogController()
+		FileDialogView(file_dialog_controller)
+		file_dialog_controller.show_open_dialog(self.main_controller.get_playlist_file_controller().import_playlist)
+
+	def export_playlist_button_clicked(self):
+		file_dialog_controller = FileDialogController()
+		FileDialogView(file_dialog_controller)
+		file_dialog_controller.show_save_dialog(self.main_controller.get_playlist_file_controller().export_playlist)
 
 	def new_clip(self):
 		self.playlist_list_store.clear()

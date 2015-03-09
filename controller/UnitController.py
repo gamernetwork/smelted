@@ -57,7 +57,8 @@ class InitialiseUnitsController(Controller):
 			clip.unit = unit.unit_name
 			clip.index = clip_object['index']
 			clip.path = clip_object['path']
-			clip.clip_in = clip_object['clip_out']
+			clip.clip_in = clip_object['clip_in']
+			clip.clip_out = clip_object['clip_out']
 			clip.length = clip_object['length']
 			clip.calculated_length = clip_object['calculated_length']
 			clip.fps = clip_object['fps']

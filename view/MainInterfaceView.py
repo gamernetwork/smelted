@@ -1,4 +1,3 @@
-#!/usr/bin/python
 from gi.repository import Gtk
 from GtkView import GtkView
 
@@ -47,3 +46,12 @@ class MainInterfaceView(GtkView):
 
 	def on_add_to_playlist_button_clicked(self, button, data=None):
 		self.controller.add_file_handler(self.file_chooser_button.get_filenames())
+
+	def on_import_playlist_button_clicked(self, button, data=None):
+		self.controller.import_playlist_button_clicked()
+
+	def on_export_playlist_button_clicked(self, button, data=None):
+		self.controller.export_playlist_button_clicked()
+
+	def on_cancel_button_clicked(self, button, data=None):
+		pass
