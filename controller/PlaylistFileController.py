@@ -3,12 +3,29 @@ from model import ModelManager
 
 class PlaylistFileController:
 
-	def __init__(self):
-		pass
+	melted_telnet_controller = None
+	main_controller = None
+
+	def __init__(self, main_controller, melted_telnet_controller):
+		self.melted_telnet_controller = melted_telnet_controller
+		self.main_controller = main_controller
 
 	def import_playlist(self, file):
 		tree = etree.parse(file)
-		root = tree.getroot()
+		playlist_root = tree.getroot()
+		if playlist_root.tag == 'playlist':
+			for unit in playlist_root:
+				self.melted_telnet_controller.clean_unit(unit.attrib.get('name'))
+				for clip in unit:
+					self.melted_telnet_controller.append_clip_to_queue(unit.attrib.get('name'), clip.find("path").text)
+					self.melted_telnet_controller.set_clip_in_point(unit.attrib.get('name'), clip.find("in").text, clip.get('index'))
+					self.melted_telnet_controller.set_clip_out_point(unit.attrib.get('name'), clip.find("out").text, clip.get('index'))
+				self.main_controller.get_unit_controller().find_clips_on_unit(ModelManager.get_models(ModelManager.MODEL_UNIT)[0]['model'])
+		else:
+			self.file_error()
+
+	def file_error(self):
+		raise Exception("Problem with XML file")
 
 	def export_playlist(self, file):
 		root = etree.Element('playlist')
@@ -25,9 +42,8 @@ class PlaylistFileController:
 
 		xml_string = etree.tostring(root, pretty_print=True)
 		file = open(file, 'w+')
-		file.write(xml_string)
+		file.write('<?xml version="1.0" encoding="utf-8"?>\n' + xml_string)
 		file.close()
-
 
 	def get_unit_clips_as_xml(self, unit):
 		clip_elements = []

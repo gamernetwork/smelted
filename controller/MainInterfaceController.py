@@ -19,12 +19,12 @@ class MainInterfaceController(Controller):
 
 	def on_view_added(self, view):
 		self.playlist_list_store = self.view.builder.get_object("playlist_list_store")
-		ModelManager.register_on_model_added_callback(self.new_clip, ModelManager.MODEL_CLIP)
+		ModelManager.register_on_model_added_callback(self.refresh_clips, ModelManager.MODEL_CLIP)
 
 	def add_file_handler(self, paths):
 		if len(paths) > 0:
 			path = paths[0]
-			self.melted_telnet_controller.load_clip(0, path)
+			self.melted_telnet_controller.append_clip_to_queue("U0", path)
 			self.main_controller.get_unit_controller().find_clips_on_unit(ModelManager.get_models(ModelManager.MODEL_UNIT)[0]['model'])
 		else:
 			print("No file selected")
@@ -63,7 +63,7 @@ class MainInterfaceController(Controller):
 		FileDialogView(file_dialog_controller)
 		file_dialog_controller.show_save_dialog(self.main_controller.get_playlist_file_controller().export_playlist)
 
-	def new_clip(self):
+	def refresh_clips(self):
 		self.playlist_list_store.clear()
 		clips = ModelManager.get_models(ModelManager.MODEL_CLIP)
 		for clip in clips:

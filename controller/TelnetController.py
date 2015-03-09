@@ -151,7 +151,7 @@ class MeltedTelnetController(TelnetController):
 		# self.load_clip(0, "/home/luke/Videos/trailer.mp4")
 		# self.load_clip(1, "/home/luke/Videos/video.mp4")
 		# self.play_clip(0)
-		self.clean_unit(0)
+		# self.clean_unit("U0")
 
 	def create_melted_unit(self, device="sdl"):
 		self.push_command("UADD " + device)
@@ -160,7 +160,7 @@ class MeltedTelnetController(TelnetController):
 		self.push_command("REMOVE U" + str(unit))
 
 	def load_clip(self, unit, path):
-		self.push_command("APND U" + str(unit) + ' "' + os.path.normpath(path) + '"', 20000)
+		self.push_command("LOAD U" + str(unit) + ' "' + os.path.normpath(path) + '"', 20000)
 
 	def play_clip(self, unit):
 		self.push_command("PLAY U" + str(unit))
@@ -181,18 +181,25 @@ class MeltedTelnetController(TelnetController):
 	def loop_clip(self, unit):
 		self.push_command("USET U" + str(unit) + " eof=loop")
 
+	def set_clip_in_point(self, unit, point, index):
+		self.push_command("SIN " + str(unit) + " " + point + " " + index)
+
+	def set_clip_out_point(self, unit, point, index):
+		self.push_command("SOUT " + str(unit) + " " + point + " " + index)
+
 	def stop_looping_clip(self, unit):
 		# TODO stop looping, currently not working
 		self.push_command("USET U" + str(unit))
 
 	def append_clip_to_queue(self, unit, clip):
-		self.push_command("APND U" + str(unit) + " " + clip)
+		self.push_command("APND " + str(unit) + " " + clip)
 
 	def goto_position_clip(self, unit, percent):
 		self.push_command("GOTO U" + str(unit) + " 0")
 
 	def clean_unit(self, unit):
-		self.push_command("CLEAN U" + str(unit))
+		self.push_command("CLEAN " + str(unit), 10000)
+		self.push_command("REMOVE " + str(unit), 10000)
 
 	def get_units(self, callback):
 		self.push_command("ULS", 10000, "\r\n\r\n", callback, self.process_units)
