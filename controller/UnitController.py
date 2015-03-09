@@ -71,3 +71,30 @@ class InitialiseUnitsController(Controller):
 			self.melted_telnet_controller.get_unit_clips(unit.unit_name, self.add_clips)
 		else:
 			self.loaded_callback()
+
+class UnitsController():
+
+	melted_telnet_controller = None
+
+	def __init__(self, melted_telnet_controller):
+		self.melted_telnet_controller = melted_telnet_controller
+
+	def find_existing_units(self):
+		self.melted_telnet_controller.get_units(self.add_units)
+
+	def add_units(self, units):
+		unit_list = []
+
+		unit_models = ModelManager.get_models(ModelManager.MODEL_UNIT)
+		unit_model_index = 0
+		for unit_object in units:
+			if unit_model_index < len(unit_models):
+				unit = unit_models[unit_model_index]['model']
+			else:
+				unit = Models.Clip()
+
+			unit.unit_name = unit_object['unit_name']
+			unit.type = unit_object['type']
+			unit.online = unit_object['online']
+			unit_list.append(unit)
+			ModelManager.register_model(unit, ModelManager.MODEL_UNIT)

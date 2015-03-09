@@ -1,6 +1,6 @@
 from MainInterfaceController import MainInterfaceController
 from TelnetController import MeltedTelnetController
-from UnitController import InitialiseUnitsController
+from UnitController import InitialiseUnitsController, UnitsController
 from PlaylistFileController import PlaylistFileController
 from view import MainInterfaceView
 from gi.repository import Gtk
@@ -10,7 +10,8 @@ class MainController():
 
 	main_interface_controller = None
 	telnet_controller = None
-	unit_controller = None
+	initialise_units_controller = None
+	units_controller = None
 	playlist_controller = None
 
 	loaded = False
@@ -24,10 +25,12 @@ class MainController():
 		main_interface_controller = MainInterfaceView.MainInterfaceView(self.main_interface_controller)
 
 		# manages melted units, existing units and their clips
-		self.unit_controller = InitialiseUnitsController(self.telnet_controller, self.on_loaded_from_telnet)
+		self.initialise_units_controller = InitialiseUnitsController(self.telnet_controller, self.on_loaded_from_telnet)
 
 		# manages playlist file manipulation import/export
 		self.playlist_file_controller = PlaylistFileController(self, self.telnet_controller)
+
+		self.units_controller = UnitsController(self.telnet_controller)
 
 		self.start_load_wait()
 
@@ -45,8 +48,11 @@ class MainController():
 	def on_loaded_from_telnet(self):
 		self.loaded = True
 
-	def get_unit_controller(self):
-		return self.unit_controller
+	def get_initialise_units_controller(self):
+		return self.initialise_units_controller
+
+	def get_units_controller(self):
+		return self.units_controller
 
 	def get_playlist_file_controller(self):
 		return self.playlist_file_controller

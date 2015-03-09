@@ -53,5 +53,5 @@ class MainInterfaceView(GtkView):
 	def on_export_playlist_button_clicked(self, button, data=None):
 		self.controller.export_playlist_button_clicked()
 
-	def on_cancel_button_clicked(self, button, data=None):
-		pass
+	def on_add_unit_button_clicked(self, button, data=None):
+		self.controller.add_unit_button_clicked()

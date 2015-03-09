@@ -20,7 +20,8 @@ class PlaylistFileController:
 					self.melted_telnet_controller.append_clip_to_queue(unit.attrib.get('name'), clip.find("path").text)
 					self.melted_telnet_controller.set_clip_in_point(unit.attrib.get('name'), clip.find("in").text, clip.get('index'))
 					self.melted_telnet_controller.set_clip_out_point(unit.attrib.get('name'), clip.find("out").text, clip.get('index'))
-				self.main_controller.get_unit_controller().find_clips_on_unit(ModelManager.get_models(ModelManager.MODEL_UNIT)[0]['model'])
+					# some sort of memory error without doing this for every clip load :s
+					self.main_controller.get_initialise_units_controller().find_clips_on_unit(ModelManager.get_models(ModelManager.MODEL_UNIT)[0]['model'])
 		else:
 			self.file_error()
 
