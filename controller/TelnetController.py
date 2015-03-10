@@ -2,6 +2,7 @@ import telnetlib
 import threading
 import time
 import os
+import Smelted_Settings
 
 
 # General Telnet operations in this class
@@ -163,7 +164,7 @@ class MeltedTelnetController(TelnetController):
 		self.push_command("LOAD U" + str(unit) + ' "' + os.path.normpath(path) + '"', 20000)
 
 	def play_clip(self, unit):
-		self.push_command("PLAY U" + str(unit))
+		self.push_command("PLAY " + Smelted_Settings.current_unit)
 
 	def pause_clip(self, unit):
 		self.push_command("PAUSE U" + str(unit))

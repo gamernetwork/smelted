@@ -2,7 +2,7 @@ from Controller import Controller
 from model import ModelManager
 from FileDialogController import FileDialogController
 from view.FileDialogView import FileDialogView
-import threading
+import Smelted_Settings
 from gi.repository import GObject
 import os
 
@@ -30,8 +30,8 @@ class MainInterfaceController(Controller):
 	def add_file_handler(self, paths):
 		if len(paths) > 0:
 			path = paths[0]
-			self.melted_telnet_controller.append_clip_to_queue("U0", path)
-			self.main_controller.get_units_controller().find_clips_on_unit(ModelManager.get_models(ModelManager.MODEL_UNIT)[0].unit_name)
+			self.melted_telnet_controller.append_clip_to_queue(Smelted_Settings.current_unit, path)
+			self.main_controller.get_units_controller().find_clips_on_unit(Smelted_Settings.current_unit)
 		else:
 			print("No file selected")
 
@@ -73,6 +73,10 @@ class MainInterfaceController(Controller):
 		self.melted_telnet_controller.create_melted_unit()
 		self.main_controller.get_units_controller().find_existing_units()
 
+	def unit_tree_view_cursor_changed(self, index):
+		Smelted_Settings.current_unit = "U" + str(index)
+		self.refresh_clips(None)
+
 	def clear_list_model(self, store):
 		store.clear()
 
@@ -83,8 +87,11 @@ class MainInterfaceController(Controller):
 	def refresh_clips(self, clip):
 		GObject.idle_add(self.clear_list_model, self.playlist_list_store)
 		clips = ModelManager.get_models(ModelManager.MODEL_CLIP)
+		clip_index = 0
 		for clip in clips:
-			GObject.idle_add(self.update_list_model, self.playlist_list_store, [os.path.basename(clip.path)])
+			if clip.unit == Smelted_Settings.current_unit:
+				GObject.idle_add(self.update_list_model, self.playlist_list_store, [str(clip_index) + ": " + os.path.basename(clip.path)])
+				clip_index += 1
 
 	def remove_units(self):
 		GObject.idle_add(self.clear_list_model, self.unit_list_store)

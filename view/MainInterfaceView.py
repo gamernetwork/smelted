@@ -55,3 +55,13 @@ class MainInterfaceView(GtkView):
 
 	def on_add_unit_button_clicked(self, button, data=None):
 		self.controller.add_unit_button_clicked()
+
+	def on_unit_tree_view_cursor_changed(self, tree_selection):
+		model, list_iter = tree_selection.get_selection().get_selected()
+		self.controller.unit_tree_view_cursor_changed(model.get_path(list_iter)[0])
+
+	def on_playlist_list_store_row_deleted(self, model, tree_view):
+		# for i in model:
+		#	model.get_path(i)[0]
+		# print model.get_path(list_iter)[0]
+		pass
