@@ -2,6 +2,8 @@ from Controller import Controller
 from model import ModelManager
 from FileDialogController import FileDialogController
 from view.FileDialogView import FileDialogView
+import threading
+from gi.repository import GObject
 import os
 
 
@@ -70,16 +72,32 @@ class MainInterfaceController(Controller):
 		self.melted_telnet_controller.create_melted_unit()
 		self.main_controller.get_units_controller().find_existing_units()
 
+	def clear_list_model(self, store):
+		store.clear()
+
+	def update_list_model(self, store, data):
+		store.append(data)
+
 	def refresh_clips(self):
-		self.playlist_list_store.clear()
-		clips = ModelManager.get_models(ModelManager.MODEL_CLIP)
-		for clip in clips:
-			clip = clip['model']
-			self.playlist_list_store.append([os.path.basename(clip.path)])
+		lock = threading.Lock()
+		lock.acquire()
+		try:
+			GObject.idle_add(self.clear_list_model, self.playlist_list_store)
+			clips = ModelManager.get_models(ModelManager.MODEL_CLIP)
+			for clip in clips:
+				clip = clip['model']
+				GObject.idle_add(self.update_list_model, self.playlist_list_store, [os.path.basename(clip.path)])
+		finally:
+			lock.release()
 
 	def refresh_units(self):
-		self.unit_list_store.clear()
-		units = ModelManager.get_models(ModelManager.MODEL_UNIT)
-		for unit in units:
-			unit = unit['model']
-			self.unit_list_store.append(["Unit: " + str(unit.unit_name)])
+		lock = threading.Lock()
+		lock.acquire()
+		try:
+			self.unit_list_store.clear()
+			units = ModelManager.get_models(ModelManager.MODEL_UNIT)
+			for unit in units:
+				unit = unit['model']
+				# self.unit_list_store.append(["Unit: " + str(unit.unit_name)])
+		finally:
+			lock.release()

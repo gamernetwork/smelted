@@ -89,7 +89,7 @@ class TelnetController(object):
 
 			if len(self.telnet_commands) > 0:
 				command = self.telnet_commands[0]
-				
+
 				# search for matches to callback to, if it hits timeout remove from telnet_command list
 				if command['match']:
 					if self.line != '':

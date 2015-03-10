@@ -4,6 +4,7 @@ from UnitController import InitialiseUnitsController, UnitsController
 from PlaylistFileController import PlaylistFileController
 from view import MainInterfaceView
 from gi.repository import Gtk
+from gi.repository import GObject
 
 
 class MainController():
@@ -17,6 +18,8 @@ class MainController():
 	loaded = False
 
 	def __init__(self):
+		GObject.threads_init()
+
 		# sets up telnet interface
 		self.telnet_controller = MeltedTelnetController()
 
