@@ -35,8 +35,8 @@ class TelnetController(object):
 			raise Exception("Expected '100 VTR Ready', is there something wrong with the server?")
 
 	# Adds a command to a queue
-	def push_command(self, command, timeout=5000, match=None, callback=None, process_callback=None):
-		self.telnet_commands.append({"command": command, "time_created": int(round(time.time() * 1000)), "timeout": timeout, "match": match, "callback": callback, "process_callback": process_callback})
+	def push_command(self, command, timeout=5000, match=None, callback=None, process_callback=None, data=None):
+		self.telnet_commands.append({"command": command, "time_created": int(round(time.time() * 1000)), "timeout": timeout, "match": match, "callback": callback, "process_callback": process_callback, "data": data})
 		if len(self.telnet_commands) == 1:
 			self.execute_command(command)
 
@@ -96,7 +96,7 @@ class TelnetController(object):
 						if self.line.find(command['match']) >= 0:
 							if command['process_callback']:
 								if command['process_callback']:
-									command['process_callback'](self.line, command['callback'])
+									command['process_callback'](self.line, command['callback'], command['data'])
 								elif command['callback']:
 									command['callback']()
 
@@ -108,7 +108,7 @@ class TelnetController(object):
 					if int(round(time.time() * 1000)) - command['time_created'] > command['timeout']:
 
 						if command['process_callback']:
-							command['process_callback'](None, None)
+							command['process_callback'](None, None, command['data'])
 						elif command['callback']:
 								command['callback']()
 
@@ -205,9 +205,9 @@ class MeltedTelnetController(TelnetController):
 		self.push_command("ULS", 10000, "\r\n\r\n", callback, self.process_units)
 
 	def get_unit_clips(self, unit, callback):
-		self.push_command("LIST " + unit, 10000, '\r\n\r\n', callback, self.process_clips)
+		self.push_command("LIST " + unit, 10000, '\r\n\r\n', callback, self.process_clips, unit)
 
-	def process_units(self, result, callback):
+	def process_units(self, result, callback, data):
 		if result:
 			result = result.split("\r\n")
 			i = 0
@@ -227,7 +227,7 @@ class MeltedTelnetController(TelnetController):
 		else:
 			print("No units found")
 
-	def process_clips(self, result, callback):
+	def process_clips(self, result, callback, data):
 		if result:
 			result = result.split("\r\n")
 			i = 0
@@ -247,7 +247,7 @@ class MeltedTelnetController(TelnetController):
 
 				i += 1
 			if callback:
-				callback(results)
+				callback(results, data)
 			else:
 				raise Exception("No Callback")
 		else:

@@ -24,13 +24,14 @@ class MainInterfaceController(Controller):
 		self.playlist_list_store = self.view.builder.get_object("playlist_list_store")
 		self.unit_list_store = self.view.builder.get_object("unit_list_store")
 		ModelManager.register_on_model_added_callback(self.refresh_clips, ModelManager.MODEL_CLIP)
-		ModelManager.register_on_model_added_callback(self.refresh_units, ModelManager.MODEL_UNIT)
+		ModelManager.register_on_model_added_callback(self.add_unit, ModelManager.MODEL_UNIT)
+		ModelManager.register_on_model_list_emptied_callback(self.remove_units, ModelManager.MODEL_UNIT)
 
 	def add_file_handler(self, paths):
 		if len(paths) > 0:
 			path = paths[0]
 			self.melted_telnet_controller.append_clip_to_queue("U0", path)
-			self.main_controller.get_initialise_units_controller().find_clips_on_unit(ModelManager.get_models(ModelManager.MODEL_UNIT)[0]['model'])
+			self.main_controller.get_units_controller().find_clips_on_unit(ModelManager.get_models(ModelManager.MODEL_UNIT)[0].unit_name)
 		else:
 			print("No file selected")
 
@@ -78,16 +79,15 @@ class MainInterfaceController(Controller):
 	def update_list_model(self, store, data):
 		store.append(data)
 
-	def refresh_clips(self):
+	# could optimise this, clears list on every new clip added
+	def refresh_clips(self, clip):
 		GObject.idle_add(self.clear_list_model, self.playlist_list_store)
 		clips = ModelManager.get_models(ModelManager.MODEL_CLIP)
 		for clip in clips:
-			clip = clip['model']
 			GObject.idle_add(self.update_list_model, self.playlist_list_store, [os.path.basename(clip.path)])
 
-	def refresh_units(self):
+	def remove_units(self):
 		GObject.idle_add(self.clear_list_model, self.unit_list_store)
-		units = ModelManager.get_models(ModelManager.MODEL_UNIT)
-		for unit in units:
-			unit = unit['model']
-			GObject.idle_add(self.update_list_model, self.unit_list_store, ["Unit " + str(unit.unit_name)[1]])
+
+	def add_unit(self, unit):
+		GObject.idle_add(self.update_list_model, self.unit_list_store, ["Unit " + str(unit.unit_name)[1]])
