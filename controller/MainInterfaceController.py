@@ -79,25 +79,15 @@ class MainInterfaceController(Controller):
 		store.append(data)
 
 	def refresh_clips(self):
-		lock = threading.Lock()
-		lock.acquire()
-		try:
-			GObject.idle_add(self.clear_list_model, self.playlist_list_store)
-			clips = ModelManager.get_models(ModelManager.MODEL_CLIP)
-			for clip in clips:
-				clip = clip['model']
-				GObject.idle_add(self.update_list_model, self.playlist_list_store, [os.path.basename(clip.path)])
-		finally:
-			lock.release()
+		GObject.idle_add(self.clear_list_model, self.playlist_list_store)
+		clips = ModelManager.get_models(ModelManager.MODEL_CLIP)
+		for clip in clips:
+			clip = clip['model']
+			GObject.idle_add(self.update_list_model, self.playlist_list_store, [os.path.basename(clip.path)])
 
 	def refresh_units(self):
-		lock = threading.Lock()
-		lock.acquire()
-		try:
-			self.unit_list_store.clear()
-			units = ModelManager.get_models(ModelManager.MODEL_UNIT)
-			for unit in units:
-				unit = unit['model']
-				# self.unit_list_store.append(["Unit: " + str(unit.unit_name)])
-		finally:
-			lock.release()
+		GObject.idle_add(self.clear_list_model, self.unit_list_store)
+		units = ModelManager.get_models(ModelManager.MODEL_UNIT)
+		for unit in units:
+			unit = unit['model']
+			GObject.idle_add(self.update_list_model, self.unit_list_store, ["Unit " + str(unit.unit_name)[1]])
