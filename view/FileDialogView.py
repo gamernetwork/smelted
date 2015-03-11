@@ -8,11 +8,17 @@ class FileDialogView(GtkView):
 		super(FileDialogView, self).__init__(controller)
 		Gtk.Window.__init__(self, title="File Chooser")
 
-	def open_dialog(self, type, title):
+	def open_dialog(self, dialog_type, title, type):
+		button = None
+		if type == "save":
+			button = Gtk.STOCK_SAVE
+		else:
+			button = Gtk.STOCK_OPEN
+
 		dialog = Gtk.FileChooserDialog(title, self,
-			type,
+			dialog_type,
 			(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
-			Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+			button, Gtk.ResponseType.OK))
 
 		self.add_filters(dialog)
 
