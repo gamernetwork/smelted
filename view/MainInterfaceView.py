@@ -4,6 +4,8 @@ from GtkView import GtkView
 
 class MainInterfaceView(GtkView):
 
+	has_dragged_playlist = False
+
 	def __init__(self, main_interface_controller):
 		self.gladefile = "view/designs/main_interface.glade"
 		self.builder = Gtk.Builder()
@@ -32,11 +34,11 @@ class MainInterfaceView(GtkView):
 	def on_stop_button_clicked(self, button, data=None):
 		self.controller.stop_handler()
 
-	def on_forward_button_clicked(self, button, data=None):
-		self.controller.forward_handler()
+	def on_next_button_clicked(self, button, data=None):
+		self.controller.next_clip_handler()
 
-	def on_rewind_button_clicked(self, button, data=None):
-		self.controller.rewind_handler()
+	def on_previous_button_clicked(self, button, data=None):
+		self.controller.previous_clip_handler()
 
 	def on_loop_toggle_button_toggled(self, button, data=None):
 		self.controller.loop_handler(button.get_active())
@@ -60,8 +62,14 @@ class MainInterfaceView(GtkView):
 		model, list_iter = tree_selection.get_selection().get_selected()
 		self.controller.unit_tree_view_cursor_changed(model.get_path(list_iter)[0])
 
-	def on_playlist_list_store_row_deleted(self, model, tree_view):
-		# for i in model:
-		#	model.get_path(i)[0]
-		# print model.get_path(list_iter)[0]
-		pass
+	def on_playlist_tree_view_drag_begin(self, drag, drag2):
+		self.has_dragged_playlist = True
+
+	def on_playlist_tree_view_drag_end(self, drag, drag2):
+		self.has_dragged_playlist = False
+
+	def dragged_playlist(self):
+		return self.has_dragged_playlist
+
+	def on_playlist_list_store_row_deleted(self, list_store, tree_path):
+		self.controller.check_playlist_order_changed()

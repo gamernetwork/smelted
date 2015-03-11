@@ -205,7 +205,7 @@
                 <child>
                   <object class="GtkButton" id="add_to_playlist_button">
                     <property name="label" translatable="yes">--&gt; Add To Playlist </property>
-                    <property name="width_request">50</property>
+                    <property name="width_request">500</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
@@ -240,6 +240,7 @@
                         <property name="can_focus">False</property>
                         <child>
                           <object class="GtkTreeView" id="unit_tree_view">
+                            <property name="width_request">300</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="model">unit_list_store</property>
@@ -264,6 +265,7 @@
                         </child>
                         <child>
                           <object class="GtkTextView" id="textview1">
+                            <property name="width_request">300</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                           </object>
@@ -282,7 +284,7 @@
                     </child>
                     <child>
                       <object class="GtkTreeView" id="playlist_tree_view">
-                        <property name="width_request">50</property>
+                        <property name="width_request">500</property>
                         <property name="height_request">300</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
@@ -291,13 +293,27 @@
                         <property name="reorderable">True</property>
                         <property name="search_column">0</property>
                         <property name="enable_grid_lines">horizontal</property>
+                        <signal name="drag-end" handler="on_playlist_tree_view_drag_end" swapped="no"/>
+                        <signal name="drag-begin" handler="on_playlist_tree_view_drag_begin" swapped="no"/>
                         <child>
                           <object class="GtkTreeViewColumn" id="media_files">
+                            <property name="min_width">200</property>
                             <property name="title" translatable="yes">Media Files</property>
                             <child>
                               <object class="GtkCellRendererText" id="file"/>
                               <attributes>
                                 <attribute name="text">0</attribute>
+                              </attributes>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkTreeViewColumn" id="unit_index_column">
+                            <property name="title" translatable="yes">Clip Index</property>
+                            <child>
+                              <object class="GtkCellRendererText" id="index"/>
+                              <attributes>
+                                <attribute name="text">1</attribute>
                               </attributes>
                             </child>
                           </object>
@@ -452,13 +468,13 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="rewind_button">
-                <property name="label" translatable="yes">Rewind</property>
+              <object class="GtkButton" id="next_button">
+                <property name="label" translatable="yes">Next Clip</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_action_appearance">False</property>
-                <signal name="clicked" handler="on_rewind_button_clicked" swapped="no"/>
+                <signal name="clicked" handler="on_next_button_clicked" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -467,33 +483,18 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="forward_button">
-                <property name="label" translatable="yes">Forward</property>
+              <object class="GtkButton" id="previous_button">
+                <property name="label" translatable="yes">Previous Clip</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_action_appearance">False</property>
-                <signal name="clicked" handler="on_forward_button_clicked" swapped="no"/>
+                <signal name="clicked" handler="on_previous_button_clicked" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">True</property>
                 <property name="fill">True</property>
                 <property name="position">4</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkToggleButton" id="loop_toggle_button">
-                <property name="label" translatable="yes">Loop</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="use_action_appearance">False</property>
-                <signal name="toggled" handler="on_loop_toggle_button_toggled" swapped="no"/>
-              </object>
-              <packing>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
-                <property name="position">5</property>
               </packing>
             </child>
           </object>
@@ -509,6 +510,10 @@
   <object class="GtkListStore" id="playlist_list_store">
     <columns>
       <!-- column-name Media -->
+      <column type="gchararray"/>
+      <!-- column-name index -->
+      <column type="guint"/>
+      <!-- column-name Clip Ended Event -->
       <column type="gchararray"/>
     </columns>
     <signal name="row-deleted" handler="on_playlist_list_store_row_deleted" swapped="no"/>

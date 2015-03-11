@@ -149,38 +149,44 @@ class MeltedTelnetController(TelnetController):
 							{"code": 404, "meaning": "Failed to locate or open clip"},
 							{"code": 405, "meaning": "Argument value out of range"},
 							{"code": 500, "meaning": "Server Error"}]
-		# self.load_clip(0, "/home/luke/Videos/trailer.mp4")
-		# self.load_clip(1, "/home/luke/Videos/video.mp4")
-		# self.play_clip(0)
+		# self.load_clip("U0", "/home/luke/Videos/trailer.mp4")
+		# self.load_clip("U1", "/home/luke/Videos/video.mp4")
+		# self.play_clip("U0")
 		# self.clean_unit("U0")
 
 	def create_melted_unit(self, device="sdl"):
 		self.push_command("UADD " + device)
 
-	def remove_melted_unit(self, unit):
-		self.push_command("REMOVE U" + str(unit))
+	def remove_melted_unit(self, unit_name):
+		self.push_command("REMOVE " + unit_name)
 
-	def load_clip(self, unit, path):
-		self.push_command("LOAD U" + str(unit) + ' "' + os.path.normpath(path) + '"', 20000)
+	def load_clip(self, unit_name, path):
+		self.push_command("LOAD " + unit_name + ' "' + os.path.normpath(path) + '"', 20000)
 
-	def play_clip(self, unit):
-		self.push_command("PLAY " + Smelted_Settings.current_unit)
+	def play_clip(self, unit_name):
+		self.push_command("PLAY " + unit_name)
 
-	def pause_clip(self, unit):
-		self.push_command("PAUSE U" + str(unit))
+	def pause_clip(self, unit_name):
+		self.push_command("PAUSE " + unit_name)
 
-	def stop_clip(self, unit):
-		self.push_command("STOP U" + str(unit))
-		self.push_command("GOTO U" + str(unit) + " 0")
+	def stop_clip(self, unit_name):
+		self.push_command("STOP " + unit_name)
+		self.push_command("GOTO " + unit_name + " 0")
 
-	def forward_clip(self, unit):
-		self.push_command("FF U" + str(unit))
+	def next_clip(self, unit_name):
+		self.push_command("GOTO " + unit_name + " 0 +1")
 
-	def rewind_clip(self, unit):
-		self.push_command("REW U" + str(unit))
+	def previous_clip(self, unit_name):
+		self.push_command("GOTO " + unit_name + " 0 -1")
 
-	def loop_clip(self, unit):
-		self.push_command("USET U" + str(unit) + " eof=loop")
+	def forward_clip(self, unit_name):
+		self.push_command("FF " + unit_name)
+
+	def rewind_clip(self, unit_name):
+		self.push_command("REW " + unit_name)
+
+	def loop_clip(self, unit_name):
+		self.push_command("USET " + unit_name + " eof=loop")
 
 	def set_clip_in_point(self, unit, point, index):
 		self.push_command("SIN " + str(unit) + " " + point + " " + index)
@@ -207,6 +213,9 @@ class MeltedTelnetController(TelnetController):
 
 	def get_unit_clips(self, unit, callback):
 		self.push_command("LIST " + unit, 10000, '\r\n\r\n', callback, self.process_clips, unit)
+
+	def change_clip_index(self, unit, current_clip_index, target_clip_index):
+		self.push_command("MOVE " + unit + " " + str(current_clip_index) + " " + str(target_clip_index))
 
 	def process_units(self, result, callback, data):
 		if result:

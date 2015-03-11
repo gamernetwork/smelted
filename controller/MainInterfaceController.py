@@ -3,7 +3,7 @@ from model import ModelManager
 from FileDialogController import FileDialogController
 from view.FileDialogView import FileDialogView
 import Smelted_Settings
-from gi.repository import GObject
+from gi.repository import GObject, Gtk
 import os
 
 
@@ -15,6 +15,9 @@ class MainInterfaceController(Controller):
 
 	playlist_list_store = None
 	unit_list_store = None
+	playlist_tree_view = None
+
+	refreshing_clips = False
 
 	def __init__(self, main_controller, melted_telnet_controller):
 		self.main_controller = main_controller
@@ -23,6 +26,24 @@ class MainInterfaceController(Controller):
 	def on_view_added(self, view):
 		self.playlist_list_store = self.view.builder.get_object("playlist_list_store")
 		self.unit_list_store = self.view.builder.get_object("unit_list_store")
+		self.playlist_tree_view = self.view.builder.get_object("playlist_tree_view")
+
+		# create combo box column on playlist tree view
+		end_event_list_store = Gtk.ListStore(str)
+		end_event_list_items = ["Next Clip", "Loop", "Stop"]
+		for item in end_event_list_items:
+			end_event_list_store.append([item])
+
+		renderer_combo = Gtk.CellRendererCombo()
+		renderer_combo.set_property("editable", True)
+		renderer_combo.set_property("model", end_event_list_store)
+		renderer_combo.set_property("text-column", 0)
+		renderer_combo.set_property("has-entry", False)
+		renderer_combo.connect("edited", self.on_combo_changed)
+
+		column_combo = Gtk.TreeViewColumn("Clip Ended Event", renderer_combo, text=2)
+		self.playlist_tree_view.append_column(column_combo)
+
 		ModelManager.register_on_model_added_callback(self.refresh_clips, ModelManager.MODEL_CLIP)
 		ModelManager.register_on_model_added_callback(self.add_unit, ModelManager.MODEL_UNIT)
 		ModelManager.register_on_model_list_emptied_callback(self.remove_units, ModelManager.MODEL_UNIT)
@@ -36,28 +57,28 @@ class MainInterfaceController(Controller):
 			print("No file selected")
 
 	def play_handler(self):
-		self.melted_telnet_controller.play_clip(0)
+		self.melted_telnet_controller.play_clip(Smelted_Settings.current_unit)
 
 	def pause_handler(self):
-		self.melted_telnet_controller.pause_clip(0)
+		self.melted_telnet_controller.pause_clip(Smelted_Settings.current_unit)
 
 	def stop_handler(self):
-		self.melted_telnet_controller.stop_clip(0)
+		self.melted_telnet_controller.stop_clip(Smelted_Settings.current_unit)
 
-	def rewind_handler(self):
-		self.melted_telnet_controller.rewind_clip(0)
+	def next_clip_handler(self):
+		self.melted_telnet_controller.next_clip(Smelted_Settings.current_unit)
 
-	def forward_handler(self):
-		self.melted_telnet_controller.forward_clip(0)
+	def previous_clip_handler(self):
+		self.melted_telnet_controller.previous_clip(Smelted_Settings.current_unit)
 
 	def loop_handler(self, active):
 		if active:
-			self.melted_telnet_controller.loop_clip(0)
+			self.melted_telnet_controller.loop_clip(Smelted_Settings.current_unit)
 		else:
-			self.melted_telnet_controller.stop_looping_clip(0)
+			self.melted_telnet_controller.stop_looping_clip(Smelted_Settings.current_unit)
 
 	def seek_bar_button_release_handler(self, percent):
-		self.melted_telnet_controller.goto_position_clip(0, percent)
+		self.melted_telnet_controller.goto_position_clip(Smelted_Settings.current_unit, percent)
 
 	def import_playlist_button_clicked(self):
 		file_dialog_controller = FileDialogController()
@@ -77,6 +98,19 @@ class MainInterfaceController(Controller):
 		Smelted_Settings.current_unit = "U" + str(index)
 		self.refresh_clips(None)
 
+	def check_playlist_order_changed(self):
+		if self.view.dragged_playlist():
+			index = 0
+			for item in self.playlist_list_store:
+				if index != item[1]:
+					self.melted_telnet_controller.change_clip_index(Smelted_Settings.current_unit, item[1], index)
+					self.main_controller.get_units_controller().find_clips_on_unit(Smelted_Settings.current_unit)
+					break
+				index += 1
+
+	def on_combo_changed(self, widget, path, text):
+		self.playlist_list_store[path][2] = text
+
 	def clear_list_model(self, store):
 		store.clear()
 
@@ -90,7 +124,7 @@ class MainInterfaceController(Controller):
 		clip_index = 0
 		for clip in clips:
 			if clip.unit == Smelted_Settings.current_unit:
-				GObject.idle_add(self.update_list_model, self.playlist_list_store, [str(clip_index) + ": " + os.path.basename(clip.path)])
+				GObject.idle_add(self.update_list_model, self.playlist_list_store, [os.path.basename(clip.path), int(clip.index), "Next Clip"])
 				clip_index += 1
 
 	def remove_units(self):
