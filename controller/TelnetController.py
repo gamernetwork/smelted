@@ -199,10 +199,10 @@ class MeltedTelnetController(TelnetController):
 		self.push_command("USET U" + str(unit))
 
 	def append_clip_to_queue(self, unit, clip):
-		self.push_command("APND " + str(unit) + " " + clip)
+		self.push_command("APND " + unit + " " + clip)
 
 	def goto_position_clip(self, unit, percent):
-		self.push_command("GOTO U" + str(unit) + " 0")
+		self.push_command("GOTO " + str(unit) + " 0")
 
 	def clean_unit(self, unit):
 		self.push_command("CLEAN " + str(unit), 10000)
