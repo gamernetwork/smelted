@@ -110,7 +110,7 @@ class MainInterfaceController(Controller):
 
 	def unit_tree_view_cursor_changed(self, index):
 		Smelted_Settings.current_unit = "U" + str(index)
-		self.refresh_clips(None)
+		self.refresh_clips()
 
 	def check_playlist_order_changed(self):
 		if self.view.dragged_playlist():
@@ -126,19 +126,25 @@ class MainInterfaceController(Controller):
 		self.unit_list_store[path][1] = text
 		if text == self.end_event_list_items[0]:
 			self.melted_telnet_controller.clip_end_event(Smelted_Settings.current_unit, "stop")
+			self.main_controller.get_units_controller().get_unit_by_name(Smelted_Settings.current_unit).end_of_file = "stop"
 		elif text == self.end_event_list_items[1]:
 			self.melted_telnet_controller.clip_end_event(Smelted_Settings.current_unit, "loop")
+			self.main_controller.get_units_controller().get_unit_by_name(Smelted_Settings.current_unit).end_of_file = "loop"
 		elif text == self.end_event_list_items[2]:
 			self.melted_telnet_controller.clip_end_event(Smelted_Settings.current_unit, "continue")
+			self.main_controller.get_units_controller().get_unit_by_name(Smelted_Settings.current_unit).end_of_file = "continue"
 		elif text == self.end_event_list_items[3]:
 			self.melted_telnet_controller.clip_end_event(Smelted_Settings.current_unit, "pause")
-
+			self.main_controller.get_units_controller().get_unit_by_name(Smelted_Settings.current_unit).end_of_file = "pause"
 
 	def clear_list_model(self, store):
 		store.clear()
 
 	def update_list_model(self, store, data):
 		store.append(data)
+
+	def update_list_model_item(self, store, item_index, content):
+		store[item_index][1] = content
 
 	# could optimise this, clears list on every new clip added
 	def refresh_clips(self, clip=None):
@@ -149,6 +155,9 @@ class MainInterfaceController(Controller):
 			if clip.unit == Smelted_Settings.current_unit:
 				GObject.idle_add(self.update_list_model, self.playlist_list_store, [os.path.basename(clip.path), int(clip.index)])
 				clip_index += 1
+
+	def update_eof_combo(self, index, type):
+		GObject.idle_add(self.update_list_model_item, self.unit_list_store, index, type)
 
 	def remove_units(self):
 		GObject.idle_add(self.clear_list_model, self.unit_list_store)

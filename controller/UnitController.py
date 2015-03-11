@@ -26,6 +26,13 @@ class UnitsController():
 	def find_clips_on_unit(self, unit_name):
 		self.melted_telnet_controller.get_unit_clips(unit_name, self.add_clips)
 
+	def get_eof_from_unit(self, unit_name):
+		self.melted_telnet_controller.get_eof_from_unit(unit_name, self.set_eof_on_unit)
+
+	def set_eof_on_unit(self, eof, unit_name):
+		self.get_unit_by_name(unit_name).end_of_file = eof
+		self.main_controller.get_main_interface_controller().update_eof_combo(int(unit_name[1]), eof)
+
 	def check_unit_exists(self, unit_name):
 		units = ModelManager.get_models(ModelManager.MODEL_UNIT)
 		for unit in units:
@@ -69,12 +76,14 @@ class UnitsController():
 class InitialiseUnitsController(Controller):
 
 	melted_telnet_controller = None
+	main_controller = None
 
 	pending_unit_processing = []
 
 	loaded_callback = None
 
-	def __init__(self, melted_telnet_controller, loaded_callback):
+	def __init__(self, main_controller, melted_telnet_controller, loaded_callback):
+		self.main_controller = main_controller
 		self.melted_telnet_controller = melted_telnet_controller
 		self.loaded_callback = loaded_callback
 		self.find_existing_units()
@@ -101,8 +110,23 @@ class InitialiseUnitsController(Controller):
 			unit.online = unit_object['online']
 			unit_list.append(unit)
 			ModelManager.register_model(unit, ModelManager.MODEL_UNIT)
+			self.get_eof_from_unit(unit.unit_name)
 
 		self.find_all_existing_clips(unit_list)
+
+	def get_eof_from_unit(self, unit_name):
+		self.melted_telnet_controller.get_eof_from_unit(unit_name, self.set_eof_on_unit)
+
+	def set_eof_on_unit(self, eof, unit_name):
+		self.get_unit_by_name(unit_name).end_of_file = eof
+		self.main_controller.get_main_interface_controller().update_eof_combo(int(unit_name[1]), eof)
+
+	def get_unit_by_name(self, unit_name):
+		units = ModelManager.get_models(ModelManager.MODEL_UNIT)
+		for unit in units:
+			if unit.unit_name == unit_name:
+				return unit
+		return None
 
 	def add_clips(self, clips, unit_name):
 		unit = self.pending_unit_processing.pop(0)

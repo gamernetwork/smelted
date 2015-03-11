@@ -216,6 +216,9 @@ class MeltedTelnetController(TelnetController):
 	def change_clip_index(self, unit, current_clip_index, target_clip_index):
 		self.push_command("MOVE " + unit + " " + str(current_clip_index) + " " + str(target_clip_index))
 
+	def get_eof_from_unit(self, unit, callback):
+		self.push_command("UGET " + unit + " eof", 10000, '202', callback, self.process_eof, unit)
+
 	def process_units(self, result, callback, data):
 		if result:
 			result = result.split("\r\n")
@@ -261,3 +264,15 @@ class MeltedTelnetController(TelnetController):
 				raise Exception("No Callback")
 		else:
 			print("No clips found on unit")
+
+	def process_eof(self, result, callback, data):
+		if result:
+			list = ["pause", "loop", "stop", "continue"]
+			for item in list:
+				if result.find(item) >= 0:
+					if callback:
+						callback(item, data)
+					return
+			print("No eof found")
+		else:
+			print("No eof found")

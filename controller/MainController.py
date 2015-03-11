@@ -28,7 +28,7 @@ class MainController():
 		main_interface_controller = MainInterfaceView.MainInterfaceView(self.main_interface_controller)
 
 		# manages melted units, existing units and their clips
-		self.initialise_units_controller = InitialiseUnitsController(self.telnet_controller, self.on_loaded_from_telnet)
+		self.initialise_units_controller = InitialiseUnitsController(self, self.telnet_controller, self.on_loaded_from_telnet)
 
 		# manages playlist file manipulation import/export
 		self.playlist_file_controller = PlaylistFileController(self, self.telnet_controller)

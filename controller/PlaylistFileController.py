@@ -16,6 +16,12 @@ class PlaylistFileController:
 		tree = etree.parse(file)
 		playlist_root = tree.getroot()
 		if playlist_root.tag == 'playlist':
+			# cleaning old units
+			old_units = ModelManager.get_models(ModelManager.MODEL_UNIT)
+			for unit in old_units:
+				self.melted_telnet_controller.clean_unit(unit.unit_name)
+				units_controller.find_clips_on_unit(unit.unit_name)
+
 			for unit in playlist_root:
 				# a bit reliant on unit names
 				unit_name = unit.attrib.get('name')
@@ -23,9 +29,12 @@ class PlaylistFileController:
 					self.melted_telnet_controller.create_melted_unit()
 					units_controller.find_existing_units()
 
-				self.melted_telnet_controller.clean_unit(unit_name)
+				if unit.attrib.get('eof'):
+					self.melted_telnet_controller.clip_end_event(unit_name, unit.attrib.get('eof'))
+					self.main_controller.get_units_controller().get_eof_from_unit(unit_name)
+
 				for clip in unit:
-					self.melted_telnet_controller.append_clip_to_queue(unit.attrib.get('name'), clip.find("path").text)
+					self.melted_telnet_controller.append_clip_to_queue(unit_name, clip.find("path").text)
 					# self.melted_telnet_controller.set_clip_in_point(unit.attrib.get('name'), clip.find("in").text, clip.get('index'))
 					# self.melted_telnet_controller.set_clip_out_point(unit.attrib.get('name'), clip.find("out").text, clip.get('index'))
 				units_controller.find_clips_on_unit(unit_name)
@@ -41,7 +50,7 @@ class PlaylistFileController:
 		units = ModelManager.get_models(ModelManager.MODEL_UNIT)
 
 		for unit in units:
-			unit_element = etree.Element('unit', name=unit.unit_name)
+			unit_element = etree.Element('unit', name=unit.unit_name, eof=str(unit.end_of_file))
 			clips = self.get_unit_clips_as_xml(unit)
 			for clip in clips:
 				unit_element.append(clip)
@@ -57,7 +66,7 @@ class PlaylistFileController:
 		clips = ModelManager.get_models(ModelManager.MODEL_CLIP)
 		for clip in clips:
 			if clip.unit == unit.unit_name:
-				clip_element = etree.Element('clip', index=clip.index, eof=str(clip.end_of_file))
+				clip_element = etree.Element('clip', index=clip.index)
 
 				path_element = etree.Element('path')
 				path_element.text = clip.path
