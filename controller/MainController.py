@@ -5,7 +5,7 @@ from PlaylistFileController import PlaylistFileController
 from view import MainInterfaceView
 from gi.repository import Gtk
 from gi.repository import GObject
-
+import Smelted_Settings
 
 class MainController():
 
@@ -21,7 +21,7 @@ class MainController():
 		GObject.threads_init()
 
 		# sets up telnet interface
-		self.telnet_controller = MeltedTelnetController()
+		self.telnet_controller = MeltedTelnetController(Smelted_Settings.HOST, Smelted_Settings.PORT)
 
 		# Sets up GUI with pygtk and their event listeners
 		self.main_interface_controller = MainInterfaceController(self, self.telnet_controller)
@@ -33,7 +33,7 @@ class MainController():
 		# manages playlist file manipulation import/export
 		self.playlist_file_controller = PlaylistFileController(self, self.telnet_controller)
 
-		self.units_controller = UnitsController(self.telnet_controller)
+		self.units_controller = UnitsController(self, self.telnet_controller)
 
 		self.start_load_wait()
 
@@ -59,3 +59,6 @@ class MainController():
 
 	def get_playlist_file_controller(self):
 		return self.playlist_file_controller
+
+	def get_main_interface_controller(self):
+		return self.main_interface_controller

@@ -57,7 +57,7 @@ class PlaylistFileController:
 		clips = ModelManager.get_models(ModelManager.MODEL_CLIP)
 		for clip in clips:
 			if clip.unit == unit.unit_name:
-				clip_element = etree.Element('clip', index=clip.index, looping=str(clip.looping))
+				clip_element = etree.Element('clip', index=clip.index, eof=str(clip.end_of_file))
 
 				path_element = etree.Element('path')
 				path_element.text = clip.path

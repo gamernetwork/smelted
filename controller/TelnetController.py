@@ -137,8 +137,8 @@ class TelnetController(object):
 # For executing melted specific commands
 class MeltedTelnetController(TelnetController):
 
-	def __init__(self):
-		super(MeltedTelnetController, self).__init__()
+	def __init__(self, host, port):
+		super(MeltedTelnetController, self).__init__(host, port)
 		self.response_codes = [{"code": 200, "meaning": "OK"},
 							{"code": 201, "meaning": "OK"},
 							{"code": 202, "meaning": "OK"},
@@ -185,8 +185,11 @@ class MeltedTelnetController(TelnetController):
 	def rewind_clip(self, unit_name):
 		self.push_command("REW " + unit_name)
 
-	def loop_clip(self, unit_name):
-		self.push_command("USET " + unit_name + " eof=loop")
+	def remove_clip(self, unit_name, clip_index):
+		self.push_command("REMOVE " + unit_name + " " + str(clip_index))
+
+	def clip_end_event(self, unit_name, type):
+		self.push_command("USET " + unit_name + " eof=" + type)
 
 	def set_clip_in_point(self, unit, point, index):
 		self.push_command("SIN " + str(unit) + " " + point + " " + index)
@@ -194,19 +197,15 @@ class MeltedTelnetController(TelnetController):
 	def set_clip_out_point(self, unit, point, index):
 		self.push_command("SOUT " + str(unit) + " " + point + " " + index)
 
-	def stop_looping_clip(self, unit):
-		# TODO stop looping, currently not working
-		self.push_command("USET U" + str(unit))
-
 	def append_clip_to_queue(self, unit, clip):
 		self.push_command("APND " + unit + " " + clip)
 
 	def goto_position_clip(self, unit, percent):
-		self.push_command("GOTO " + str(unit) + " 0")
+		self.push_command("GOTO " + unit + " 0")
 
 	def clean_unit(self, unit):
-		self.push_command("CLEAN " + str(unit), 10000)
-		self.push_command("REMOVE " + str(unit), 10000)
+		self.push_command("CLEAN " + unit, 10000)
+		self.push_command("REMOVE " + unit, 10000)
 
 	def get_units(self, callback):
 		self.push_command("ULS", 10000, "\r\n\r\n", callback, self.process_units)

@@ -4,9 +4,11 @@ from model import ModelManager, Models
 class UnitsController():
 
 	melted_telnet_controller = None
+	main_controller = None
 
-	def __init__(self, melted_telnet_controller):
+	def __init__(self, main_controller, melted_telnet_controller):
 		self.melted_telnet_controller = melted_telnet_controller
+		self.main_controller = main_controller
 
 	def find_existing_units(self):
 		self.melted_telnet_controller.get_units(self.add_units)
@@ -58,6 +60,9 @@ class UnitsController():
 			clip.fps = clip_object['fps']
 
 			ModelManager.register_model(clip, ModelManager.MODEL_CLIP)
+
+		if len(clips) == 0:
+			self.main_controller.get_main_interface_controller().refresh_clips()
 
 
 # used for getting the initial state of the server, should not be used for general playlist operations

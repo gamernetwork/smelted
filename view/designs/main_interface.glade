@@ -205,7 +205,7 @@
                 <child>
                   <object class="GtkButton" id="add_to_playlist_button">
                     <property name="label" translatable="yes">--&gt; Add To Playlist </property>
-                    <property name="width_request">500</property>
+                    <property name="width_request">250</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
@@ -216,6 +216,22 @@
                     <property name="expand">True</property>
                     <property name="fill">True</property>
                     <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="remove_button">
+                    <property name="label" translatable="yes">Remove</property>
+                    <property name="width_request">250</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">True</property>
+                    <property name="use_action_appearance">False</property>
+                    <signal name="clicked" handler="on_remove_button_clicked" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">2</property>
                   </packing>
                 </child>
               </object>
@@ -247,6 +263,7 @@
                             <signal name="cursor-changed" handler="on_unit_tree_view_cursor_changed" swapped="no"/>
                             <child>
                               <object class="GtkTreeViewColumn" id="unit_column">
+                                <property name="min_width">100</property>
                                 <property name="title" translatable="yes">Units</property>
                                 <child>
                                   <object class="GtkCellRendererText" id="cellrenderertext1"/>
@@ -292,6 +309,7 @@
                         <property name="headers_clickable">False</property>
                         <property name="reorderable">True</property>
                         <property name="search_column">0</property>
+                        <property name="rubber_banding">True</property>
                         <property name="enable_grid_lines">horizontal</property>
                         <signal name="drag-end" handler="on_playlist_tree_view_drag_end" swapped="no"/>
                         <signal name="drag-begin" handler="on_playlist_tree_view_drag_begin" swapped="no"/>
@@ -513,14 +531,14 @@
       <column type="gchararray"/>
       <!-- column-name index -->
       <column type="guint"/>
-      <!-- column-name Clip Ended Event -->
-      <column type="gchararray"/>
     </columns>
     <signal name="row-deleted" handler="on_playlist_list_store_row_deleted" swapped="no"/>
   </object>
   <object class="GtkListStore" id="unit_list_store">
     <columns>
       <!-- column-name Units -->
+      <column type="gchararray"/>
+      <!-- column-name End Unit -->
       <column type="gchararray"/>
     </columns>
   </object>

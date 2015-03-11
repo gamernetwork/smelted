@@ -15,6 +15,11 @@ class MainInterfaceController(Controller):
 
 	playlist_list_store = None
 	unit_list_store = None
+	end_event_list_store = None
+
+	end_event_list_items = None
+
+	unit_tree_view = None
 	playlist_tree_view = None
 
 	refreshing_clips = False
@@ -26,12 +31,13 @@ class MainInterfaceController(Controller):
 	def on_view_added(self, view):
 		self.playlist_list_store = self.view.builder.get_object("playlist_list_store")
 		self.unit_list_store = self.view.builder.get_object("unit_list_store")
+		self.unit_tree_view = self.view.builder.get_object("unit_tree_view")
 		self.playlist_tree_view = self.view.builder.get_object("playlist_tree_view")
 
-		# create combo box column on playlist tree view
+		# create combo box column on playlist tree view, should be moved to view if time allows
 		end_event_list_store = Gtk.ListStore(str)
-		end_event_list_items = ["Next Clip", "Loop", "Stop"]
-		for item in end_event_list_items:
+		self.end_event_list_items = ["Stop", "Loop", "Continue", "Pause"]
+		for item in self.end_event_list_items:
 			end_event_list_store.append([item])
 
 		renderer_combo = Gtk.CellRendererCombo()
@@ -41,8 +47,8 @@ class MainInterfaceController(Controller):
 		renderer_combo.set_property("has-entry", False)
 		renderer_combo.connect("edited", self.on_combo_changed)
 
-		column_combo = Gtk.TreeViewColumn("Clip Ended Event", renderer_combo, text=2)
-		self.playlist_tree_view.append_column(column_combo)
+		column_combo = Gtk.TreeViewColumn("Unit Ended Event", renderer_combo, text=1)
+		self.unit_tree_view.append_column(column_combo)
 
 		ModelManager.register_on_model_added_callback(self.refresh_clips, ModelManager.MODEL_CLIP)
 		ModelManager.register_on_model_added_callback(self.add_unit, ModelManager.MODEL_UNIT)
@@ -70,6 +76,14 @@ class MainInterfaceController(Controller):
 
 	def previous_clip_handler(self):
 		self.melted_telnet_controller.previous_clip(Smelted_Settings.current_unit)
+
+	def remove_clip(self):
+		model, list_iter = self.playlist_tree_view.get_selection().get_selected()
+		if list_iter is None:
+			return
+		for item in model.get_path(list_iter):
+			self.melted_telnet_controller.remove_clip(Smelted_Settings.current_unit, item)
+			self.main_controller.get_units_controller().find_clips_on_unit(Smelted_Settings.current_unit)
 
 	def loop_handler(self, active):
 		if active:
@@ -109,7 +123,16 @@ class MainInterfaceController(Controller):
 				index += 1
 
 	def on_combo_changed(self, widget, path, text):
-		self.playlist_list_store[path][2] = text
+		self.unit_list_store[path][1] = text
+		if text == self.end_event_list_items[0]:
+			self.melted_telnet_controller.clip_end_event(Smelted_Settings.current_unit, "stop")
+		elif text == self.end_event_list_items[1]:
+			self.melted_telnet_controller.clip_end_event(Smelted_Settings.current_unit, "loop")
+		elif text == self.end_event_list_items[2]:
+			self.melted_telnet_controller.clip_end_event(Smelted_Settings.current_unit, "continue")
+		elif text == self.end_event_list_items[3]:
+			self.melted_telnet_controller.clip_end_event(Smelted_Settings.current_unit, "pause")
+
 
 	def clear_list_model(self, store):
 		store.clear()
@@ -118,17 +141,17 @@ class MainInterfaceController(Controller):
 		store.append(data)
 
 	# could optimise this, clears list on every new clip added
-	def refresh_clips(self, clip):
+	def refresh_clips(self, clip=None):
 		GObject.idle_add(self.clear_list_model, self.playlist_list_store)
 		clips = ModelManager.get_models(ModelManager.MODEL_CLIP)
 		clip_index = 0
 		for clip in clips:
 			if clip.unit == Smelted_Settings.current_unit:
-				GObject.idle_add(self.update_list_model, self.playlist_list_store, [os.path.basename(clip.path), int(clip.index), "Next Clip"])
+				GObject.idle_add(self.update_list_model, self.playlist_list_store, [os.path.basename(clip.path), int(clip.index)])
 				clip_index += 1
 
 	def remove_units(self):
 		GObject.idle_add(self.clear_list_model, self.unit_list_store)
 
 	def add_unit(self, unit):
-		GObject.idle_add(self.update_list_model, self.unit_list_store, ["Unit " + str(unit.unit_name)[1]])
+		GObject.idle_add(self.update_list_model, self.unit_list_store, ["Unit " + str(unit.unit_name)[1], "Pause"])
