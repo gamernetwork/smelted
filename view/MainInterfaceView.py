@@ -58,6 +58,9 @@ class MainInterfaceView(GtkView):
 	def on_save_as_activate(self, button, data=None):
 		self.controller.export_playlist_button_clicked()
 
+	def on_new_activate(self, button, data=None):
+		self.controller.new_activated_handler()
+
 	def on_add_unit_button_clicked(self, button, data=None):
 		self.controller.add_unit_button_clicked()
 

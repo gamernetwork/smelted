@@ -1,5 +1,5 @@
 from Controller import Controller
-from model import ModelManager
+from model import ModelManager, Models
 from FileDialogController import FileDialogController
 from view.FileDialogView import FileDialogView
 import Smelted_Settings
@@ -54,6 +54,8 @@ class MainInterfaceController(Controller):
 		ModelManager.register_on_model_added_callback(self.add_unit, ModelManager.MODEL_UNIT)
 		ModelManager.register_on_model_list_emptied_callback(self.remove_units, ModelManager.MODEL_UNIT)
 
+		ModelManager.register_on_attribute_changed_callback(self.update_seek_progress, Models.Clip.CLIP_PROGRESS)
+
 	def add_file_handler(self, paths):
 		if len(paths) > 0:
 			path = paths[0]
@@ -84,6 +86,9 @@ class MainInterfaceController(Controller):
 		for item in model.get_path(list_iter):
 			self.melted_telnet_controller.remove_clip(Smelted_Settings.current_unit, item)
 			self.main_controller.get_units_controller().find_clips_on_unit(Smelted_Settings.current_unit)
+
+	def new_activated_handler(self):
+		self.main_controller.get_units_controller().clean_units()
 
 	def loop_handler(self, active):
 		if active:
@@ -145,6 +150,10 @@ class MainInterfaceController(Controller):
 
 	def update_list_model_item(self, store, item_index, content):
 		store[item_index][1] = content
+
+	def update_seek_progress(self, clip):
+		self.view.slider.set_range(0, int(clip.length))
+		self.view.slider.get_adjustment().set_value(int(clip.progress))
 
 	# could optimise this, clears list on every new clip added
 	def refresh_clips(self, clip=None):

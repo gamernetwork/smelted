@@ -1,3 +1,5 @@
+import ModelManager
+
 class Unit():
 	unit_name = None
 	type = None
@@ -6,6 +8,8 @@ class Unit():
 
 
 class Clip():
+	CLIP_PROGRESS = "clip_progress"
+
 	unit = None
 	index = None
 	path = None
@@ -16,3 +20,9 @@ class Clip():
 	fps = 0
 	progress = 0
 	looping = False
+
+	def set_clip_progress(self, clip_progress):
+		if self.progress == clip_progress:
+			return
+		self.progress = clip_progress
+		ModelManager.on_model_attribute_changed(self, self.CLIP_PROGRESS)

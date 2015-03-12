@@ -48,6 +48,12 @@ class UnitsController():
 				return unit
 		return None
 
+	def clean_units(self):
+		old_units = ModelManager.get_models(ModelManager.MODEL_UNIT)
+		for unit in old_units:
+			self.melted_telnet_controller.clean_unit(unit.unit_name)
+			self.find_clips_on_unit(unit.unit_name)
+
 	def add_clips(self, clips, unit_name):
 
 		clip_models = ModelManager.get_models(ModelManager.MODEL_CLIP)

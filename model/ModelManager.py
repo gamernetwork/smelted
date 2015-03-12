@@ -9,6 +9,8 @@ model_removed_callbacks = []
 
 model_list_emptied_callbacks = []
 
+model_attribute_changed_callbacks = []
+
 
 def get_models(model):
 	i = 0
@@ -42,6 +44,10 @@ def empty_model_list(model_type):
 	notify_model_list_emptied(model_type)
 
 
+def on_model_attribute_changed(model, model_attribute):
+	notify_attribute_changed(model_attribute, model)
+
+
 def register_on_model_added_callback(callback, model_type):
 	model_added_callbacks.append({'callback': callback, 'model_type': model_type})
 
@@ -52,6 +58,10 @@ def register_on_model_removed_callback(callback, model_type):
 
 def register_on_model_list_emptied_callback(callback, model_type):
 	model_list_emptied_callbacks.append({'callback': callback, 'model_type': model_type})
+
+
+def register_on_attribute_changed_callback(callback, model_attribute):
+	model_attribute_changed_callbacks.append({'callback': callback, 'model_attribute': model_attribute})
 
 
 def notify_model_added(model_type, model):
@@ -70,3 +80,9 @@ def notify_model_list_emptied(model_type):
 	for callback in model_list_emptied_callbacks:
 		if model_type == callback['model_type']:
 			callback['callback']()
+
+
+def notify_attribute_changed(model_attribute, model):
+	for callback in model_attribute_changed_callbacks:
+		if model_attribute == callback['model_attribute']:
+			callback['callback'](model)

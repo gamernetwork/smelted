@@ -1,5 +1,5 @@
 from MainInterfaceController import MainInterfaceController
-from TelnetController import MeltedTelnetController
+from TelnetController import MeltedTelnetController, MeltedTelnetPollingController
 from UnitController import InitialiseUnitsController, UnitsController
 from PlaylistFileController import PlaylistFileController
 from view import MainInterfaceView
@@ -11,6 +11,7 @@ class MainController():
 
 	main_interface_controller = None
 	telnet_controller = None
+	melted_telnet_polling_controller = None
 	initialise_units_controller = None
 	units_controller = None
 	playlist_controller = None
@@ -22,6 +23,7 @@ class MainController():
 
 		# sets up telnet interface
 		self.telnet_controller = MeltedTelnetController(Smelted_Settings.HOST, Smelted_Settings.PORT)
+		self.melted_telnet_polling_controller = MeltedTelnetPollingController(Smelted_Settings.HOST, Smelted_Settings.PORT)
 
 		# Sets up GUI with pygtk and their event listeners
 		self.main_interface_controller = MainInterfaceController(self, self.telnet_controller)
@@ -43,9 +45,11 @@ class MainController():
 				try:
 					Gtk.main()
 					self.telnet_controller.disconnect()
+					self.melted_telnet_polling_controller.disconnect()
 				except KeyboardInterrupt:
 					if self.telnet_controller is not None:
 						self.telnet_controller.disconnect()
+						self.melted_telnet_polling_controller.disconnect()
 				break
 
 	def on_loaded_from_telnet(self):
