@@ -31,7 +31,7 @@ class UnitsController():
 
 	def set_eof_on_unit(self, eof, unit_name):
 		self.get_unit_by_name(unit_name).end_of_file = eof
-		self.main_controller.get_main_interface_controller().update_eof_combo(int(unit_name[1]), eof)
+		self.main_controller.get_main_interface_controller().update_eof_combo(int(unit_name[1]), eof, 1)
 
 	def check_unit_exists(self, unit_name):
 		units = ModelManager.get_models(ModelManager.MODEL_UNIT)
@@ -125,7 +125,7 @@ class InitialiseUnitsController(Controller):
 
 	def set_eof_on_unit(self, eof, unit_name):
 		self.get_unit_by_name(unit_name).end_of_file = eof
-		self.main_controller.get_main_interface_controller().update_eof_combo(int(unit_name[1]), eof)
+		self.main_controller.get_main_interface_controller().update_eof_combo(int(unit_name[1]), eof, 1)
 
 	def get_unit_by_name(self, unit_name):
 		units = ModelManager.get_models(ModelManager.MODEL_UNIT)

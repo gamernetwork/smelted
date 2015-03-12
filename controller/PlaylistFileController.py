@@ -1,5 +1,6 @@
 from lxml import etree
 from model import ModelManager
+import Smelted_Settings
 
 class PlaylistFileController:
 
@@ -33,10 +34,14 @@ class PlaylistFileController:
 					self.melted_telnet_controller.clip_end_event(unit_name, unit.attrib.get('eof'))
 					self.main_controller.get_units_controller().get_eof_from_unit(unit_name)
 
+				self.melted_telnet_controller.set_unit_points(unit_name, "ignore")
+
 				for clip in unit:
 					self.melted_telnet_controller.append_clip_to_queue(unit_name, clip.find("path").text)
-					# self.melted_telnet_controller.set_clip_in_point(unit.attrib.get('name'), clip.find("in").text, clip.get('index'))
-					# self.melted_telnet_controller.set_clip_out_point(unit.attrib.get('name'), clip.find("out").text, clip.get('index'))
+					if unit_name == Smelted_Settings.current_unit:
+						self.melted_telnet_controller.set_clip_in_point(unit.attrib.get('name'), clip.find("in").text, clip.get('index'))
+						self.melted_telnet_controller.set_clip_out_point(unit.attrib.get('name'), clip.find("out").text, clip.get('index'))
+				self.melted_telnet_controller.set_unit_points(unit_name, "use")
 				units_controller.find_clips_on_unit(unit_name)
 		else:
 			self.file_error()

@@ -37,6 +37,7 @@ class MainInterfaceController(Controller):
 		self.melted_telnet_controller = melted_telnet_controller
 
 	def on_view_added(self, view):
+		self.view.window.set_title(Smelted_Settings.program_title)
 		self.playlist_list_store = self.view.builder.get_object("playlist_list_store")
 		self.unit_list_store = self.view.builder.get_object("unit_list_store")
 		self.unit_tree_view = self.view.builder.get_object("unit_tree_view")
@@ -212,6 +213,12 @@ class MainInterfaceController(Controller):
 			self.main_controller.get_units_controller().get_unit_by_name(Smelted_Settings.current_unit).end_of_file = "pause"
 
 	def update_seek_progress(self, clip):
+		for item in self.playlist_list_store:
+			if int(clip.index) == item[1]:
+				GObject.idle_add(self.update_list_model_item, self.playlist_list_store, int(item[1]), "#ADD8E6", 2)
+			else:
+				GObject.idle_add(self.update_list_model_item, self.playlist_list_store, int(item[1]), "#FFFFFF", 2)
+
 		total_seconds = math.floor(int(clip.progress) / float(clip.fps))
 		label_text = self.convert_total_seconds_to_time(total_seconds)
 
@@ -243,8 +250,8 @@ class MainInterfaceController(Controller):
 	def update_list_model(self, store, data):
 		store.append(data)
 
-	def update_list_model_item(self, store, item_index, content):
-		store[item_index][1] = content
+	def update_list_model_item(self, store, item_index, content, column):
+		store[item_index][column] = content
 
 	def update_label_text(self, label, text):
 		label.set_text(text)
@@ -260,11 +267,11 @@ class MainInterfaceController(Controller):
 		clip_index = 0
 		for clip in clips:
 			if clip.unit == Smelted_Settings.current_unit:
-				GObject.idle_add(self.update_list_model, self.playlist_list_store, [os.path.basename(clip.path), int(clip.index)])
+				GObject.idle_add(self.update_list_model, self.playlist_list_store, [os.path.basename(clip.path), int(clip.index), "#FFFFFF"])
 				clip_index += 1
 
-	def update_eof_combo(self, index, type):
-		GObject.idle_add(self.update_list_model_item, self.unit_list_store, index, type)
+	def update_eof_combo(self, index, type, column):
+		GObject.idle_add(self.update_list_model_item, self.unit_list_store, index, type, column)
 
 	def remove_units(self):
 		GObject.idle_add(self.clear_list_model, self.unit_list_store)

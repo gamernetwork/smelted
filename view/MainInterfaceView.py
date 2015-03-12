@@ -16,7 +16,6 @@ class MainInterfaceView(GtkView):
 		self.file_chooser_button = self.builder.get_object("file_chooser_button")
 		self.slider.set_range(0, 100)
 		super(MainInterfaceView, self).__init__(main_interface_controller)
-
 		self.window.show()
 
 	def on_window1_destroy(self, object, data=None):
@@ -79,7 +78,8 @@ class MainInterfaceView(GtkView):
 
 	def on_playlist_tree_view_cursor_changed(self, tree_selection):
 		model, list_iter = tree_selection.get_selection().get_selected()
-		self.controller.playlist_tree_view_cursor_changed(model.get_path(list_iter)[0])
+		if len(model) > 0:
+			self.controller.playlist_tree_view_cursor_changed(model.get_path(list_iter)[0])
 
 	def on_in_slider_change_value(self, scale_object, scroll_type, value):
 		self.controller.in_slider_change_value_handler(value)

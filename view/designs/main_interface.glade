@@ -1,7 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.16.1 -->
 <interface>
-  <requires lib="gtk+" version="2.24"/>
-  <!-- interface-naming-policy project-wide -->
+  <requires lib="gtk+" version="3.0"/>
+  <object class="GtkListStore" id="playlist_list_store">
+    <columns>
+      <!-- column-name Media -->
+      <column type="gchararray"/>
+      <!-- column-name index -->
+      <column type="guint"/>
+      <!-- column-name color -->
+      <column type="gchararray"/>
+    </columns>
+    <signal name="row-deleted" handler="on_playlist_list_store_row_deleted" swapped="no"/>
+  </object>
+  <object class="GtkListStore" id="unit_list_store">
+    <columns>
+      <!-- column-name Units -->
+      <column type="gchararray"/>
+      <!-- column-name End -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
   <object class="GtkWindow" id="main_interface_window">
     <property name="can_focus">False</property>
     <signal name="destroy" handler="on_window1_destroy" swapped="no"/>
@@ -15,9 +34,9 @@
             <property name="can_focus">False</property>
             <child>
               <object class="GtkMenuItem" id="menuitem1">
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="use_action_appearance">False</property>
                 <property name="label" translatable="yes">_File</property>
                 <property name="use_underline">True</property>
                 <child type="submenu">
@@ -27,9 +46,9 @@
                     <child>
                       <object class="GtkImageMenuItem" id="new">
                         <property name="label">gtk-new</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                         <signal name="activate" handler="on_new_activate" swapped="no"/>
@@ -38,9 +57,9 @@
                     <child>
                       <object class="GtkImageMenuItem" id="open">
                         <property name="label">gtk-open</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                         <signal name="activate" handler="on_open_activate" swapped="no"/>
@@ -49,9 +68,9 @@
                     <child>
                       <object class="GtkImageMenuItem" id="save">
                         <property name="label">gtk-save</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                         <signal name="activate" handler="on_save_activate" swapped="no"/>
@@ -60,26 +79,27 @@
                     <child>
                       <object class="GtkImageMenuItem" id="save_as">
                         <property name="label">gtk-save-as</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
+                        <signal name="activate" handler="on_save_as_activate" swapped="no"/>
                       </object>
                     </child>
                     <child>
                       <object class="GtkSeparatorMenuItem" id="separatormenuitem1">
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                       </object>
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="gtk_quit">
                         <property name="label">gtk-quit</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                         <signal name="activate" handler="on_gtk_quit_activate" swapped="no"/>
@@ -91,9 +111,9 @@
             </child>
             <child>
               <object class="GtkMenuItem" id="menuitem2">
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="use_action_appearance">False</property>
                 <property name="label" translatable="yes">_Edit</property>
                 <property name="use_underline">True</property>
                 <child type="submenu">
@@ -103,9 +123,9 @@
                     <child>
                       <object class="GtkImageMenuItem" id="imagemenuitem6">
                         <property name="label">gtk-cut</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                       </object>
@@ -113,9 +133,9 @@
                     <child>
                       <object class="GtkImageMenuItem" id="imagemenuitem7">
                         <property name="label">gtk-copy</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                       </object>
@@ -123,9 +143,9 @@
                     <child>
                       <object class="GtkImageMenuItem" id="imagemenuitem8">
                         <property name="label">gtk-paste</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                       </object>
@@ -133,9 +153,9 @@
                     <child>
                       <object class="GtkImageMenuItem" id="imagemenuitem9">
                         <property name="label">gtk-delete</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                       </object>
@@ -146,18 +166,18 @@
             </child>
             <child>
               <object class="GtkMenuItem" id="menuitem3">
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="use_action_appearance">False</property>
                 <property name="label" translatable="yes">_View</property>
                 <property name="use_underline">True</property>
               </object>
             </child>
             <child>
               <object class="GtkMenuItem" id="menuitem4">
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="use_action_appearance">False</property>
                 <property name="label" translatable="yes">_Help</property>
                 <property name="use_underline">True</property>
                 <child type="submenu">
@@ -167,9 +187,9 @@
                     <child>
                       <object class="GtkImageMenuItem" id="imagemenuitem10">
                         <property name="label">gtk-about</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                       </object>
@@ -208,11 +228,11 @@
                 <child>
                   <object class="GtkButton" id="add_to_playlist_button">
                     <property name="label" translatable="yes">--&gt; Add To Playlist </property>
+                    <property name="use_action_appearance">False</property>
                     <property name="width_request">250</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
-                    <property name="use_action_appearance">False</property>
                     <signal name="clicked" handler="on_add_to_playlist_button_clicked" swapped="no"/>
                   </object>
                   <packing>
@@ -224,11 +244,11 @@
                 <child>
                   <object class="GtkButton" id="remove_button">
                     <property name="label" translatable="yes">Remove</property>
+                    <property name="use_action_appearance">False</property>
                     <property name="width_request">250</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
-                    <property name="use_action_appearance">False</property>
                     <signal name="clicked" handler="on_remove_button_clicked" swapped="no"/>
                   </object>
                   <packing>
@@ -264,6 +284,9 @@
                             <property name="can_focus">True</property>
                             <property name="model">unit_list_store</property>
                             <signal name="cursor-changed" handler="on_unit_tree_view_cursor_changed" swapped="no"/>
+                            <child internal-child="selection">
+                              <object class="GtkTreeSelection" id="treeview-selection1"/>
+                            </child>
                             <child>
                               <object class="GtkTreeViewColumn" id="unit_column">
                                 <property name="min_width">100</property>
@@ -311,12 +334,15 @@
                         <property name="model">playlist_list_store</property>
                         <property name="headers_clickable">False</property>
                         <property name="reorderable">True</property>
-                        <property name="search_column">0</property>
+                        <property name="search_column">1</property>
                         <property name="rubber_banding">True</property>
                         <property name="enable_grid_lines">horizontal</property>
                         <signal name="cursor-changed" handler="on_playlist_tree_view_cursor_changed" swapped="no"/>
-                        <signal name="drag-end" handler="on_playlist_tree_view_drag_end" swapped="no"/>
                         <signal name="drag-begin" handler="on_playlist_tree_view_drag_begin" swapped="no"/>
+                        <signal name="drag-end" handler="on_playlist_tree_view_drag_end" swapped="no"/>
+                        <child internal-child="selection">
+                          <object class="GtkTreeSelection" id="treeview-selection2"/>
+                        </child>
                         <child>
                           <object class="GtkTreeViewColumn" id="media_files">
                             <property name="min_width">200</property>
@@ -324,6 +350,7 @@
                             <child>
                               <object class="GtkCellRendererText" id="file"/>
                               <attributes>
+                                <attribute name="cell-background">2</attribute>
                                 <attribute name="text">0</attribute>
                               </attributes>
                             </child>
@@ -335,6 +362,7 @@
                             <child>
                               <object class="GtkCellRendererText" id="index"/>
                               <attributes>
+                                <attribute name="cell-background">2</attribute>
                                 <attribute name="text">1</attribute>
                               </attributes>
                             </child>
@@ -368,11 +396,11 @@
                 <child>
                   <object class="GtkButton" id="out_button">
                     <property name="label" translatable="yes">Set Out</property>
+                    <property name="use_action_appearance">False</property>
                     <property name="width_request">150</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
-                    <property name="use_action_appearance">False</property>
                     <signal name="clicked" handler="on_out_button_clicked" swapped="no"/>
                   </object>
                   <packing>
@@ -423,11 +451,11 @@
                 <child>
                   <object class="GtkButton" id="in_button">
                     <property name="label" translatable="yes">Set In</property>
+                    <property name="use_action_appearance">False</property>
                     <property name="width_request">150</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
-                    <property name="use_action_appearance">False</property>
                     <signal name="clicked" handler="on_in_button_clicked" swapped="no"/>
                   </object>
                   <packing>
@@ -525,10 +553,10 @@
             <child>
               <object class="GtkButton" id="play_button">
                 <property name="label" translatable="yes">Play</property>
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="use_action_appearance">False</property>
                 <signal name="clicked" handler="on_play_button_clicked" swapped="no"/>
               </object>
               <packing>
@@ -540,10 +568,10 @@
             <child>
               <object class="GtkButton" id="pause_button">
                 <property name="label" translatable="yes">Pause</property>
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="use_action_appearance">False</property>
                 <property name="yalign">0.49000000953674316</property>
                 <signal name="clicked" handler="on_pause_button_clicked" swapped="no"/>
               </object>
@@ -556,10 +584,10 @@
             <child>
               <object class="GtkButton" id="stop_button">
                 <property name="label" translatable="yes">Stop</property>
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="use_action_appearance">False</property>
                 <property name="relief">half</property>
                 <signal name="clicked" handler="on_stop_button_clicked" swapped="no"/>
               </object>
@@ -572,10 +600,10 @@
             <child>
               <object class="GtkButton" id="next_button">
                 <property name="label" translatable="yes">Next Clip</property>
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="use_action_appearance">False</property>
                 <signal name="clicked" handler="on_next_button_clicked" swapped="no"/>
               </object>
               <packing>
@@ -587,10 +615,10 @@
             <child>
               <object class="GtkButton" id="previous_button">
                 <property name="label" translatable="yes">Previous Clip</property>
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="use_action_appearance">False</property>
                 <signal name="clicked" handler="on_previous_button_clicked" swapped="no"/>
               </object>
               <packing>
@@ -608,22 +636,5 @@
         </child>
       </object>
     </child>
-  </object>
-  <object class="GtkListStore" id="playlist_list_store">
-    <columns>
-      <!-- column-name Media -->
-      <column type="gchararray"/>
-      <!-- column-name index -->
-      <column type="guint"/>
-    </columns>
-    <signal name="row-deleted" handler="on_playlist_list_store_row_deleted" swapped="no"/>
-  </object>
-  <object class="GtkListStore" id="unit_list_store">
-    <columns>
-      <!-- column-name Units -->
-      <column type="gchararray"/>
-      <!-- column-name End -->
-      <column type="gchararray"/>
-    </columns>
   </object>
 </interface>

@@ -194,6 +194,9 @@ class MeltedTelnetController(TelnetController):
 	def clip_end_event(self, unit_name, type):
 		self.push_command("USET " + unit_name + " eof=" + type)
 
+	def set_unit_points(self, unit_name, type):
+		self.push_command("USET " + unit_name + " points=" + type)
+
 	def set_clip_in_point(self, unit, point, index):
 		self.push_command("SIN " + str(unit) + " " + point + " " + index)
 
@@ -321,6 +324,9 @@ class MeltedTelnetPollingController(TelnetController):
 					if result[i][0].isdigit() and result[i][1] == " ":
 						unit_info = result[i].split(" ")
 						match = re.search(r"(offline|not_loaded|playing|stopped|paused|disconnected|unknown)", unit_info[1])
+
+						if unit_info[1] != "playing":
+							return
 
 						# See if success.
 						if match:
