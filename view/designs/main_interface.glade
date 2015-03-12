@@ -314,6 +314,7 @@
                         <property name="search_column">0</property>
                         <property name="rubber_banding">True</property>
                         <property name="enable_grid_lines">horizontal</property>
+                        <signal name="cursor-changed" handler="on_playlist_tree_view_cursor_changed" swapped="no"/>
                         <signal name="drag-end" handler="on_playlist_tree_view_drag_end" swapped="no"/>
                         <signal name="drag-begin" handler="on_playlist_tree_view_drag_begin" swapped="no"/>
                         <child>
@@ -361,17 +362,153 @@
               </packing>
             </child>
             <child>
-              <object class="GtkHScale" id="seek_bar">
+              <object class="GtkHBox" id="hbox6">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="round_digits">1</property>
-                <property name="value_pos">left</property>
-                <signal name="button-release-event" handler="on_seek_bar_button_release_event" swapped="no"/>
+                <property name="can_focus">False</property>
+                <child>
+                  <object class="GtkButton" id="out_button">
+                    <property name="label" translatable="yes">Set Out</property>
+                    <property name="width_request">150</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">True</property>
+                    <property name="use_action_appearance">False</property>
+                    <signal name="clicked" handler="on_out_button_clicked" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="out_slider_label">
+                    <property name="width_request">50</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">0:00</property>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkHScale" id="out_slider">
+                    <property name="width_request">600</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="digits">0</property>
+                    <property name="draw_value">False</property>
+                    <signal name="change-value" handler="on_out_slider_change_value" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">2</property>
+                  </packing>
+                </child>
               </object>
               <packing>
                 <property name="expand">True</property>
                 <property name="fill">True</property>
                 <property name="position">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkHBox" id="hbox5">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <child>
+                  <object class="GtkButton" id="in_button">
+                    <property name="label" translatable="yes">Set In</property>
+                    <property name="width_request">150</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">True</property>
+                    <property name="use_action_appearance">False</property>
+                    <signal name="clicked" handler="on_in_button_clicked" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="in_slider_label">
+                    <property name="width_request">50</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">0:00</property>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkHScale" id="in_slider">
+                    <property name="width_request">600</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="digits">0</property>
+                    <property name="draw_value">False</property>
+                    <signal name="change-value" handler="on_in_slider_change_value" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">2</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkHBox" id="hbox4">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <child>
+                  <object class="GtkLabel" id="progress_label">
+                    <property name="width_request">200</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="xalign">0.93999999761581421</property>
+                    <property name="label" translatable="yes">0:00</property>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkHScale" id="seek_bar">
+                    <property name="width_request">600</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="digits">0</property>
+                    <property name="draw_value">False</property>
+                    <signal name="button-release-event" handler="on_seek_bar_button_release_event" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">4</property>
               </packing>
             </child>
           </object>

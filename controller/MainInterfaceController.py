@@ -5,6 +5,7 @@ from view.FileDialogView import FileDialogView
 import Smelted_Settings
 from gi.repository import GObject, Gtk
 import os
+import math
 
 
 class MainInterfaceController(Controller):
@@ -22,7 +23,14 @@ class MainInterfaceController(Controller):
 	unit_tree_view = None
 	playlist_tree_view = None
 
+	in_slider_view = None
+	out_slider_view = None
+	in_slider_label_view = None
+	out_slider_label_view = None
+
 	refreshing_clips = False
+
+	progress_label = None
 
 	def __init__(self, main_controller, melted_telnet_controller):
 		self.main_controller = main_controller
@@ -33,6 +41,13 @@ class MainInterfaceController(Controller):
 		self.unit_list_store = self.view.builder.get_object("unit_list_store")
 		self.unit_tree_view = self.view.builder.get_object("unit_tree_view")
 		self.playlist_tree_view = self.view.builder.get_object("playlist_tree_view")
+		self.progress_label = self.view.builder.get_object("progress_label")
+
+		self.in_slider_view = self.view.builder.get_object("in_slider")
+		self.out_slider_view = self.view.builder.get_object("out_slider")
+
+		self.in_slider_label_view = self.view.builder.get_object("in_slider_label")
+		self.out_slider_label_view = self.view.builder.get_object("out_slider_label")
 
 		# create combo box column on playlist tree view, should be moved to view if time allows
 		end_event_list_store = Gtk.ListStore(str)
@@ -117,6 +132,60 @@ class MainInterfaceController(Controller):
 		Smelted_Settings.current_unit = "U" + str(index)
 		self.refresh_clips()
 
+	def playlist_tree_view_cursor_changed(self, index):
+		clip = None
+
+		clip_list = ModelManager.get_models(ModelManager.MODEL_CLIP)
+		for clip_candidate in clip_list:
+			if str(index) == clip_candidate.index and Smelted_Settings.current_unit == clip_candidate.unit:
+				clip = clip_candidate
+				break
+
+		if clip:
+			total_seconds_in = math.floor(float(clip.clip_in) / float(clip.fps))
+			total_seconds_out = math.floor(float(clip.clip_out) / float(clip.fps))
+
+			label_text_in = self.convert_total_seconds_to_time(total_seconds_in)
+			label_text_out = self.convert_total_seconds_to_time(total_seconds_out)
+
+			GObject.idle_add(self.update_label_text, self.out_slider_label_view, label_text_out)
+			GObject.idle_add(self.update_label_text, self.in_slider_label_view, label_text_in)
+
+			GObject.idle_add(self.update_slider, self.out_slider_view, int(clip.calculated_length), int(clip.clip_out))
+			GObject.idle_add(self.update_slider, self.in_slider_view, int(clip.calculated_length), int(clip.clip_in))
+
+	def in_slider_change_value_handler(self, value):
+		clip = self.get_clip_by_playlist_cursor()
+		if clip:
+			if value > int(clip.length):
+				value = clip.length
+			clip.clip_in = str(value)
+			total_seconds_in = math.floor(int(value) / float(clip.fps))
+			label_text_in = self.convert_total_seconds_to_time(total_seconds_in)
+			GObject.idle_add(self.update_label_text, self.in_slider_label_view, label_text_in)
+
+	def out_slider_change_value_handler(self, value):
+		clip = self.get_clip_by_playlist_cursor()
+		if clip:
+			if value > int(clip.length):
+				value = clip.length
+			clip.clip_out = str(value)
+			total_seconds_out = math.floor(int(value) / float(clip.fps))
+			label_text_out = self.convert_total_seconds_to_time(total_seconds_out)
+		GObject.idle_add(self.update_label_text, self.out_slider_label_view, label_text_out)
+
+	def get_clip_by_playlist_cursor(self):
+		model, list_iter = self.playlist_tree_view.get_selection().get_selected()
+		if list_iter is not None:
+			index = model.get_path(list_iter)[0]
+
+			clip_list = ModelManager.get_models(ModelManager.MODEL_CLIP)
+			for clip_candidate in clip_list:
+				if str(index) == clip_candidate.index and Smelted_Settings.current_unit == clip_candidate.unit:
+					return clip_candidate
+					break
+		return None
+
 	def check_playlist_order_changed(self):
 		if self.view.dragged_playlist():
 			index = 0
@@ -142,6 +211,32 @@ class MainInterfaceController(Controller):
 			self.melted_telnet_controller.clip_end_event(Smelted_Settings.current_unit, "pause")
 			self.main_controller.get_units_controller().get_unit_by_name(Smelted_Settings.current_unit).end_of_file = "pause"
 
+	def update_seek_progress(self, clip):
+		total_seconds = math.floor(int(clip.progress) / float(clip.fps))
+		label_text = self.convert_total_seconds_to_time(total_seconds)
+
+		GObject.idle_add(self.update_label_text, self.progress_label, label_text)
+		GObject.idle_add(self.update_slider, self.view.slider, int(clip.length), int(clip.progress))
+
+	def set_in(self):
+		clip = self.get_clip_by_playlist_cursor()
+		if clip:
+			self.melted_telnet_controller.set_clip_in_point(Smelted_Settings.current_unit, clip.clip_in, clip.index)
+
+	def set_out(self):
+		clip = self.get_clip_by_playlist_cursor()
+		if clip:
+			self.melted_telnet_controller.set_clip_out_point(Smelted_Settings.current_unit, clip.clip_out, clip.index)
+
+	def convert_total_seconds_to_time(self, total_seconds):
+		minutes = int(math.floor(total_seconds / 60))
+		seconds = int(total_seconds % 60)
+
+		if seconds < 10:
+			seconds = "0" + str(seconds)
+
+		return str(minutes) + ":" + str(seconds)
+
 	def clear_list_model(self, store):
 		store.clear()
 
@@ -151,9 +246,12 @@ class MainInterfaceController(Controller):
 	def update_list_model_item(self, store, item_index, content):
 		store[item_index][1] = content
 
-	def update_seek_progress(self, clip):
-		self.view.slider.set_range(0, int(clip.length))
-		self.view.slider.get_adjustment().set_value(int(clip.progress))
+	def update_label_text(self, label, text):
+		label.set_text(text)
+
+	def update_slider(self, slider, length, value):
+		slider.set_range(0, length)
+		slider.get_adjustment().set_value(value)
 
 	# could optimise this, clears list on every new clip added
 	def refresh_clips(self, clip=None):

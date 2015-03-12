@@ -26,3 +26,8 @@ class Clip():
 			return
 		self.progress = clip_progress
 		ModelManager.on_model_attribute_changed(self, self.CLIP_PROGRESS)
+
+	def set_clip_in(self, clip_in):
+		if self.clip_in == clip_in:
+			return
+		self.clip_in = clip_in

@@ -67,9 +67,25 @@ class MainInterfaceView(GtkView):
 	def on_remove_button_clicked(self, button, data=None):
 		self.controller.remove_clip()
 
+	def on_in_button_clicked(self, button, data=None):
+		self.controller.set_in()
+
+	def on_out_button_clicked(self, button, data=None):
+		self.controller.set_out()
+
 	def on_unit_tree_view_cursor_changed(self, tree_selection):
 		model, list_iter = tree_selection.get_selection().get_selected()
 		self.controller.unit_tree_view_cursor_changed(model.get_path(list_iter)[0])
+
+	def on_playlist_tree_view_cursor_changed(self, tree_selection):
+		model, list_iter = tree_selection.get_selection().get_selected()
+		self.controller.playlist_tree_view_cursor_changed(model.get_path(list_iter)[0])
+
+	def on_in_slider_change_value(self, scale_object, scroll_type, value):
+		self.controller.in_slider_change_value_handler(value)
+
+	def on_out_slider_change_value(self, scale_object, scroll_type, value):
+		self.controller.out_slider_change_value_handler(value)
 
 	def on_playlist_tree_view_drag_begin(self, drag, drag2):
 		self.has_dragged_playlist = True

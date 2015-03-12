@@ -361,3 +361,4 @@ class MeltedTelnetPollingController(TelnetController):
 		for clip in clip_list:
 			if result["clip_index"] == clip.index and "U" + result["unit"] == clip.unit:
 				clip.set_clip_progress(result["current_position"])
+				break
