@@ -253,7 +253,8 @@ class MeltedTelnetController(TelnetController):
 
 			while i < len(result):
 				if len(result[i]) > 2:
-					if result[i][0].isdigit() and result[i][2] == '"':
+					# awful hack but it works!
+					if result[i][0].isdigit() and (result[i][2] == '"' or result[i][3] == '"' or result[i][4] == '"'):
 						clip = result[i].split(" ")
 						# used if there are spaces in the file path, there is probably a better method of doing this
 						while len(clip) > 7:

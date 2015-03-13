@@ -38,9 +38,9 @@ class PlaylistFileController:
 
 				for clip in unit:
 					self.melted_telnet_controller.append_clip_to_queue(unit_name, clip.find("path").text)
-					if unit_name == Smelted_Settings.current_unit:
-						self.melted_telnet_controller.set_clip_in_point(unit.attrib.get('name'), clip.find("in").text, clip.get('index'))
-						self.melted_telnet_controller.set_clip_out_point(unit.attrib.get('name'), clip.find("out").text, clip.get('index'))
+					# if unit_name == Smelted_Settings.current_unit:
+						# self.melted_telnet_controller.set_clip_in_point(unit.attrib.get('name'), clip.find("in").text, clip.get('index'))
+						# self.melted_telnet_controller.set_clip_out_point(unit.attrib.get('name'), clip.find("out").text, clip.get('index'))
 				self.melted_telnet_controller.set_unit_points(unit_name, "use")
 				units_controller.find_clips_on_unit(unit_name)
 		else:
