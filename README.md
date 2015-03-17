@@ -1,5 +1,10 @@
 # smelted
 
-GUI interface for telnet media server melted
+Simple GUI for [melted](https://github.com/mltframework/melted).
 
-start from main.py
+To run (assuming melted is already running):
+
+```
+python main.py
+```
+
